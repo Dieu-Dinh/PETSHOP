@@ -3,6 +3,15 @@
 require_once __DIR__ . '/../app/config/database.php';
 require_once __DIR__ . '/../app/models/Category.php';
 require_once __DIR__ . '/../app/models/Product.php';
+require_once __DIR__ . '/../app/models/User.php';
+
+// Start session and get current user (if any)
+if (session_status() === PHP_SESSION_NONE) session_start();
+$currentUser = null;
+if (!empty($_SESSION['user']['id'])) {
+    $userModel = new User();
+    $currentUser = $userModel->findById($_SESSION['user']['id']);
+}
 
 // Get data via models
 $categories = getActiveCategories(50);
@@ -30,17 +39,22 @@ if (isset($pdo) && $pdo) {
         <!-- Header / Navbar -->
         <header class="site-header">
             <div class="container header-inner">
-                <a class="brand" href="/">PETSHOP</a>
+                <a class="brand" href="index.php">PETSHOP</a>
                 <form class="search-form" action="product.php" method="get">
                     <input name="q" type="search" placeholder="Tìm kiếm sản phẩm..." />
                     <button type="submit">Tìm</button>
                 </form>
                 <nav class="top-nav">
-                    <a href="/">Trang chủ</a>
+                    <a href="index.php">Trang chủ</a>
                     <a href="product.php">Sản phẩm</a>
                     <a href="contact.php">Liên hệ</a>
                     <a href="#" class="icon-cart">Giỏ hàng</a>
-                    <a href="#" class="icon-user">Đăng nhập</a>
+                    <?php if ($currentUser): ?>
+                        <a href="profile.php" class="icon-user">Xin chào, <?= htmlspecialchars($currentUser['first_name'] ?? $currentUser['email']) ?></a>
+                        <a href="auth.php?action=logout">Đăng xuất</a>
+                    <?php else: ?>
+                        <a href="login.php" class="icon-user">Đăng nhập</a>
+                    <?php endif; ?>
                 </nav>
             </div>
         </header>
