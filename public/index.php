@@ -1,3 +1,4 @@
+<!--Trang chinh của website petshop -->
 <?php
 // Use app config and models (do not open a new PDO here; use existing database loader)
 require_once __DIR__ . '/../app/config/database.php';
@@ -172,3 +173,4 @@ if (isset($pdo) && $pdo) {
         </script>
     </body>
 </html>
+
