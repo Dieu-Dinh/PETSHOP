@@ -173,4 +173,3 @@ if (isset($pdo) && $pdo) {
         </script>
     </body>
 </html>
-

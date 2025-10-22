@@ -94,4 +94,35 @@ class User {
 
         return $stmt->execute();
     }
+
+        // 🔹 Lấy danh sách tất cả người dùng
+    public function getAllUsers() {
+        $query = "SELECT id, email, first_name, last_name, phone, role, is_active, created_at 
+                  FROM {$this->table}
+                  ORDER BY created_at DESC";
+        if (!$this->conn) return [];
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // 🔹 Xóa người dùng
+    public function deleteUser($id) {
+        $query = "DELETE FROM {$this->table} WHERE id = :id";
+        if (!$this->conn) return false;
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id);
+        return $stmt->execute();
+    }
+
+    // 🔹 Cập nhật trạng thái hoạt động (Khóa/Mở)
+    public function toggleActive($id, $status) {
+        $query = "UPDATE {$this->table} SET is_active = :status WHERE id = :id";
+        if (!$this->conn) return false;
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':id', $id);
+        $stmt->bindParam(':status', $status, PDO::PARAM_BOOL);
+        return $stmt->execute();
+    }
+
 }
