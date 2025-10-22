@@ -20,6 +20,57 @@ class Product
      * @param int $limit
      * @return array
      */
+
+    public function getAllProducts()
+    {
+        $sql = "
+            SELECT p.*, 
+                   c.name AS category_name,
+                   (SELECT url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) AS image
+            FROM products p
+            LEFT JOIN categories c ON p.category_id = c.id
+            ORDER BY p.created_at DESC
+        ";
+        $stmt = $this->pdo->query($sql);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /** Thêm sản phẩm mới */
+    public function createProduct($data)
+    {
+        $sql = "INSERT INTO products (sku, name, slug, category_id, base_price, price, stock_quantity, status)
+                VALUES (:sku, :name, :slug, :category_id, :base_price, :price, :stock_quantity, :status)";
+        $stmt = $this->pdo->prepare($sql);
+        return $stmt->execute($data);
+    }
+
+    /** Cập nhật sản phẩm */
+    public function updateProduct($id, $data)
+    {
+        $fields = [];
+        foreach ($data as $key => $value) {
+            $fields[] = "$key = :$key";
+        }
+        $sql = "UPDATE products SET " . implode(', ', $fields) . " WHERE id = :id";
+        $stmt = $this->pdo->prepare($sql);
+        $data['id'] = $id;
+        return $stmt->execute($data);
+    }
+
+    /** Xóa sản phẩm */
+    public function deleteProduct($id)
+    {
+        $stmt = $this->pdo->prepare("DELETE FROM products WHERE id = :id");
+        return $stmt->execute(['id' => $id]);
+    }
+
+    /** Thay đổi trạng thái (ẩn/hiện) */
+    public function toggleStatus($id, $status)
+    {
+        $stmt = $this->pdo->prepare("UPDATE products SET status = :status WHERE id = :id");
+        return $stmt->execute(['status' => $status, 'id' => $id]);
+    }
+    
     public function getActiveProducts($limit = 12)
     {
         $sql = "SELECT p.id, p.name, p.slug, p.price, p.base_price, p.category_id,
