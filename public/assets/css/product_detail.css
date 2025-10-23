@@ -1,0 +1,59 @@
+
+.product-detail-container {
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.product-detail-image img {
+    width: 320px;
+    height: auto;
+    border-radius: 8px;
+}
+
+.product-detail-info {
+    flex: 1;
+}
+
+.old-price {
+    text-decoration: line-through;
+    color: #888;
+    margin-left: 10px;
+}
+
+.stock-status .in-stock { color: green; font-weight: bold; }
+.stock-status .out-of-stock { color: red; font-weight: bold; }
+.stock-status .preorder { color: orange; }
+
+.quantity-box {
+    margin: 10px 0;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.btn-cart {
+    background-color: #28a745;
+    color: white;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-buy {
+    background-color: #ff6600;
+    color: white;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.product-long-desc {
+    margin-top: 40px;
+    line-height: 1.6;
+}

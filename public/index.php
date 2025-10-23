@@ -65,7 +65,10 @@ if (isset($pdo) && $pdo) {
     </aside>
 
     <!-- Main content -->
-    <main class="main-content">
+    <main id="main-content" class="main-content"> 
+    <?php if (isset($_GET['id'])): ?>
+        <?php include 'product_detail.php'; ?>
+    <?php else: ?>
         <section class="hero">
             <div class="hero-banner">🐶 Giao hàng hỏa tốc - Ưu đãi cực lớn!</div>
         </section>
@@ -75,10 +78,10 @@ if (isset($pdo) && $pdo) {
             <div class="product-grid">
                 <?php foreach ($products as $p): ?>
                     <article class="product">
-                        <a href="product_detail.php?id=<?= htmlspecialchars($p['id']) ?>">
+                        <a href="?id=<?= htmlspecialchars($p['id']) ?>" class="product-link" data-id="<?= htmlspecialchars($p['id']) ?>">
                             <div class="thumb">
                                 <?php if (!empty($p['image'])): ?>
-                                    <img src="<?= htmlspecialchars($p['image']) ?>" alt="<?= htmlspecialchars($p['name']) ?>" />
+                                    <img src="../assets/images/<?= htmlspecialchars($p['image']) ?>" alt="<?= htmlspecialchars($p['name']) ?>" />
                                 <?php else: ?>
                                     <div class="no-image">Không có ảnh</div>
                                 <?php endif; ?>
@@ -87,7 +90,6 @@ if (isset($pdo) && $pdo) {
                         <h3 class="title"><?= htmlspecialchars($p['name']) ?></h3>
                         <div class="price"><?= number_format($p['price'], 0, ',', '.') ?> đ</div>
 
-                        <!-- Hai nút hành động -->
                         <div class="actions">
                             <form action="cart_add.php" method="post">
                                 <input type="hidden" name="product_id" value="<?= htmlspecialchars($p['id']) ?>">
@@ -103,14 +105,10 @@ if (isset($pdo) && $pdo) {
                 <?php endforeach; ?>
             </div>
         </section>
-    </main>
+    <?php endif; ?>
+</main>
 
-    <!-- Right sidebar -->
-    <aside class="sidebar right-sidebar">
-        <h3>Thông tin</h3>
-        <div class="widget">Hotline: 0902.848.949</div>
-        <div class="widget">Giỏ hàng: <span id="cart-count">0</span></div>
-    </aside>
+    <!-- Xoa Right sidebar r-->
 </div>
 
 <footer class="site-footer">
@@ -134,6 +132,6 @@ if (isset($pdo) && $pdo) {
     <div class="copyright">© <span id="year"></span> PETSHOP</div>
 </footer>
 
-<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+<script src="assets/js/index.js"></script>
 </body>
 </html>
