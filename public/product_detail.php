@@ -16,6 +16,16 @@
     ");
     $stmt->execute([$product_id]);
     $product = $stmt->fetch(PDO::FETCH_ASSOC);
+    // If product has no main image, attempt to load from product_images table via model
+    require_once __DIR__ . '/../app/models/Product.php';
+    $productModel = new Product($pdo ?? null);
+    if ($product && empty($product['image'])) {
+        $imgs = $productModel->getProductImages($product_id);
+        if (!empty($imgs) && !empty($imgs[0]['url'])) {
+            // set product['image'] so later resolution logic will pick it
+            $product['image'] = $imgs[0]['url'];
+        }
+    }
     ?>
 
     <div class="product-detail">
@@ -23,8 +33,57 @@
             <div class="product-detail-container">
                 <!-- Hình ảnh sản phẩm -->
                 <div class="product-detail-image">
-                    <img src="<?= htmlspecialchars($product['image'] ?? 'assets/img/no-image.png') ?>" 
-                        alt="<?= htmlspecialchars($product['name']) ?>">
+                        <div class="product-images">
+                            <?php
+                            // Resolve product image similar to homepage logic
+                            $imgSrc = '';
+                            $raw = isset($product['image']) ? trim($product['image']) : '';
+
+                            if ($raw !== '' && (preg_match('#^https?://#i', $raw) || strpos($raw, '//') === 0 || strpos($raw, 'data:') === 0)) {
+                                $imgSrc = $raw;
+                            } else {
+                                $candidates = [];
+                                if ($raw !== '') {
+                                    $candidates[] = $raw; // raw value
+                                    $candidates[] = '../' . ltrim($raw, '/');
+                                    $candidates[] = '../images/products/' . ltrim($raw, '/');
+                                }
+
+                                // Try product id based filenames
+                                $exts = ['jpg','jpeg','png','gif','webp'];
+                                foreach ($exts as $ext) {
+                                    $candidates[] = '../images/products/' . $product['id'] . '.' . $ext;
+                                }
+
+                                $candidates[] = 'assets/images/placeholder.png';
+
+                                foreach ($candidates as $cand) {
+                                    if (preg_match('#^https?://#i', $cand) || strpos($cand, '//') === 0 || strpos($cand, 'data:') === 0) {
+                                        $imgSrc = $cand;
+                                        break;
+                                    }
+
+                                    $fs = realpath(__DIR__ . '/' . $cand);
+                                    if ($fs && file_exists($fs)) {
+                                        $imgSrc = $cand;
+                                        break;
+                                    }
+
+                                    $fs2 = realpath(__DIR__ . '/../' . ltrim($cand, '/'));
+                                    if ($fs2 && file_exists($fs2)) {
+                                        $imgSrc = '../' . ltrim($cand, '/');
+                                        break;
+                                    }
+                                }
+                            }
+                            ?>
+
+                            <?php if (!empty($imgSrc)): ?>
+                                <img src="<?= htmlspecialchars($imgSrc) ?>" alt="<?= htmlspecialchars($product['name']) ?>" />
+                            <?php else: ?>
+                                <div class="no-image">Không có ảnh</div>
+                            <?php endif; ?>
+                        </div>
                 </div>
 
                 <!-- Thông tin sản phẩm -->

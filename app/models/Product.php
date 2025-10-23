@@ -108,14 +108,39 @@ class Product
     public function getProductById($id)
     {
         if (!$this->pdo) return null;
-        $stmt = $this->pdo->prepare("
-            SELECT p.*, 
-                   (SELECT url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) AS image
-            FROM products p
-            WHERE p.id = :id
-        ");
-        $stmt->execute([':id' => $id]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+
+    $sql = "
+        SELECT p.*,
+               b.name AS brand_name,
+               c.name AS category_name,
+               COALESCE(p.image,
+                   (SELECT pi.url
+                    FROM product_images pi
+                    WHERE pi.product_id = p.id
+                    ORDER BY pi.is_primary DESC, pi.sort_order ASC
+                    LIMIT 1)
+               ) AS image
+        FROM products p
+        LEFT JOIN brands b ON p.brand_id = b.id
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.id = :id
+        LIMIT 1
+    ";
+
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->execute([':id' => $id]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Trả về mảng ảnh cho sản phẩm (url, alt_text, is_primary)
+     */
+    public function getProductImages($productId)
+    {
+        if (!$this->pdo) return [];
+        $stmt = $this->pdo->prepare("SELECT url, alt_text, is_primary FROM product_images WHERE product_id = :pid ORDER BY is_primary DESC, sort_order ASC");
+        $stmt->execute([':pid' => $productId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /** Lấy sản phẩm theo danh mục */
