@@ -81,7 +81,7 @@ if (isset($pdo) && $pdo) {
                         <a href="?id=<?= htmlspecialchars($p['id']) ?>" class="product-link" data-id="<?= htmlspecialchars($p['id']) ?>">
                             <div class="thumb">
                                 <?php if (!empty($p['image'])): ?>
-                                    <img src="../assets/images/<?= htmlspecialchars($p['image']) ?>" alt="<?= htmlspecialchars($p['name']) ?>" />
+                                    <img src="<?= htmlspecialchars($p['image']) ?>" alt="<?= htmlspecialchars($p['name']) ?>" />
                                 <?php else: ?>
                                     <div class="no-image">Không có ảnh</div>
                                 <?php endif; ?>

@@ -1,25 +1,32 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
 
-/**
- * Category model
- * Handles operations related to the `categories` table.
- */
 class Category
 {
     private $pdo;
 
-    public function __construct()
+    /**
+     * Constructor accepts optional PDO. If not provided, it will fall back to the
+     * global $pdo initialized by app/config/database.php.
+     */
+    public function __construct($pdo = null)
     {
-        global $pdo;
-        $this->pdo = $pdo;
+        if ($pdo instanceof PDO) {
+            $this->pdo = $pdo;
+            return;
+        }
+
+        // Ensure database config is loaded and read the global $pdo
+        if (!isset($GLOBALS['pdo'])) {
+            $cfg = __DIR__ . '/../config/database.php';
+            if (file_exists($cfg)) {
+                require_once $cfg;
+            }
+        }
+
+        $this->pdo = $GLOBALS['pdo'] ?? null;
     }
 
-    /**
-     * Lấy danh sách danh mục đang hoạt động.
-     * @param int $limit Giới hạn số lượng trả về.
-     * @return array
-     */
     public function getActiveCategories($limit = 50)
     {
         $sql = "SELECT id, name, slug, description, parent_id
@@ -27,6 +34,11 @@ class Category
                 WHERE is_active = 1
                 ORDER BY sort_order ASC, name ASC
                 LIMIT :limit";
+        if (!$this->pdo) {
+            // DB not available -> return empty array for graceful degradation
+            return [];
+        }
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
         $stmt->execute();
@@ -34,32 +46,26 @@ class Category
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Lấy thông tin một danh mục theo ID.
-     */
     public function getCategoryById($id)
     {
+        if (!$this->pdo) return null;
         $stmt = $this->pdo->prepare("SELECT * FROM categories WHERE id = :id");
         $stmt->execute([':id' => $id]);
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Lấy danh sách danh mục con của một danh mục cha.
-     */
     public function getSubcategories($parentId)
     {
+        if (!$this->pdo) return [];
         $stmt = $this->pdo->prepare("SELECT * FROM categories WHERE parent_id = :pid AND is_active = 1 ORDER BY sort_order ASC");
         $stmt->execute([':pid' => $parentId]);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 
-/**
- * Hàm tiện ích — để gọi nhanh trong controller / view.
- */
 function getActiveCategories($limit = 50)
 {
-    $model = new Category();
+    global $pdo;
+    $model = new Category($pdo);
     return $model->getActiveCategories($limit);
 }

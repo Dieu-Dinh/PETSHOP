@@ -9,10 +9,24 @@ class Product
 {
     private $pdo;
 
-    public function __construct()
+    /**
+     * Constructor accepts an optional PDO. Falls back to global $pdo if not provided.
+     */
+    public function __construct($pdo = null)
     {
-        global $pdo;
-        $this->pdo = $pdo;
+        if ($pdo instanceof PDO) {
+            $this->pdo = $pdo;
+            return;
+        }
+
+        if (!isset($GLOBALS['pdo'])) {
+            $cfg = __DIR__ . '/../config/database.php';
+            if (file_exists($cfg)) {
+                require_once $cfg;
+            }
+        }
+
+        $this->pdo = $GLOBALS['pdo'] ?? null;
     }
 
     /** Lấy toàn bộ sản phẩm */
@@ -26,6 +40,7 @@ class Product
             LEFT JOIN categories c ON p.category_id = c.id
             ORDER BY p.created_at DESC
         ";
+        if (!$this->pdo) return [];
         $stmt = $this->pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -35,6 +50,7 @@ class Product
     {
         $sql = "INSERT INTO products (sku, name, slug, category_id, base_price, price, stock_quantity, status)
                 VALUES (:sku, :name, :slug, :category_id, :base_price, :price, :stock_quantity, :status)";
+        if (!$this->pdo) return false;
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute($data);
     }
@@ -47,6 +63,7 @@ class Product
             $fields[] = "$key = :$key";
         }
         $sql = "UPDATE products SET " . implode(', ', $fields) . " WHERE id = :id";
+        if (!$this->pdo) return false;
         $stmt = $this->pdo->prepare($sql);
         $data['id'] = $id;
         return $stmt->execute($data);
@@ -55,6 +72,7 @@ class Product
     /** Xóa sản phẩm */
     public function deleteProduct($id)
     {
+        if (!$this->pdo) return false;
         $stmt = $this->pdo->prepare("DELETE FROM products WHERE id = :id");
         return $stmt->execute(['id' => $id]);
     }
@@ -62,6 +80,7 @@ class Product
     /** Thay đổi trạng thái (ẩn/hiện) */
     public function toggleStatus($id, $status)
     {
+        if (!$this->pdo) return false;
         $stmt = $this->pdo->prepare("UPDATE products SET status = :status WHERE id = :id");
         return $stmt->execute(['status' => $status, 'id' => $id]);
     }
@@ -77,6 +96,7 @@ class Product
                 ORDER BY p.featured DESC, p.created_at DESC
                 LIMIT :limit";
 
+        if (!$this->pdo) return [];
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
         $stmt->execute();
@@ -87,6 +107,7 @@ class Product
     /** Lấy sản phẩm theo ID */
     public function getProductById($id)
     {
+        if (!$this->pdo) return null;
         $stmt = $this->pdo->prepare("
             SELECT p.*, 
                    (SELECT url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) AS image
@@ -100,6 +121,7 @@ class Product
     /** Lấy sản phẩm theo danh mục */
     public function getProductsByCategory($categoryId, $limit = 20)
     {
+        if (!$this->pdo) return [];
         $stmt = $this->pdo->prepare("
             SELECT p.id, p.name, p.slug, p.price, 
                    (SELECT url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) AS image
@@ -118,46 +140,49 @@ class Product
     /** Lấy sản phẩm liên quan cùng danh mục */
     public function getRelatedProducts($categoryId, $excludeId, $limit = 4)
     {
-        $stmt = $this->pdo->prepare("
-            SELECT p.id, p.name, p.slug, p.price, 
-                   (SELECT url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) AS image
-            FROM products p
-            WHERE p.category_id = :cid 
-              AND p.id != :excludeId
-              AND p.status = 'active'
-            ORDER BY p.created_at DESC
-            LIMIT :limit
-        ");
-        $stmt->bindValue(':cid', $categoryId, PDO::PARAM_INT);
-        $stmt->bindValue(':excludeId', $excludeId, PDO::PARAM_INT);
-        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-        $stmt->execute();
+                if (!$this->pdo) return [];
+                $stmt = $this->pdo->prepare("
+                        SELECT p.id, p.name, p.slug, p.price, 
+                                     (SELECT url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) AS image
+                        FROM products p
+                        WHERE p.category_id = :cid 
+                            AND p.id != :excludeId
+                            AND p.status = 'active'
+                        ORDER BY p.created_at DESC
+                        LIMIT :limit
+                ");
+                $stmt->bindValue(':cid', $categoryId, PDO::PARAM_INT);
+                $stmt->bindValue(':excludeId', $excludeId, PDO::PARAM_INT);
+                $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+                $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+                return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /** Tìm kiếm sản phẩm theo từ khóa */
     public function searchProducts($keyword, $limit = 20)
     {
-        $stmt = $this->pdo->prepare("
-            SELECT p.id, p.name, p.slug, p.price,
-                   (SELECT url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) AS image
-            FROM products p
-            WHERE p.status = 'active'
-              AND (p.name LIKE :kw OR p.short_description LIKE :kw)
-            ORDER BY p.created_at DESC
-            LIMIT :limit
-        ");
-        $stmt->bindValue(':kw', "%$keyword%", PDO::PARAM_STR);
-        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
-        $stmt->execute();
+                if (!$this->pdo) return [];
+                $stmt = $this->pdo->prepare("
+                        SELECT p.id, p.name, p.slug, p.price,
+                                     (SELECT url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) AS image
+                        FROM products p
+                        WHERE p.status = 'active'
+                            AND (p.name LIKE :kw OR p.short_description LIKE :kw)
+                        ORDER BY p.created_at DESC
+                        LIMIT :limit
+                ");
+                $stmt->bindValue(':kw', "%$keyword%", PDO::PARAM_STR);
+                $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+                $stmt->execute();
 
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+                return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
     /** Giảm số lượng tồn kho sau khi mua */
     public function decreaseStock($productId, $quantity)
     {
+        if (!$this->pdo) return false;
         $stmt = $this->pdo->prepare("
             UPDATE products 
             SET stock_quantity = GREATEST(stock_quantity - :qty, 0)
