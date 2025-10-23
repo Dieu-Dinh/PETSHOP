@@ -1,35 +1,52 @@
-.data-table {
+.page-manage-product {
+    padding: 20px;
+    background: transparent; /* để không đè topbar */
+}
+
+/* Header */
+.page-manage-product .content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+/* Bảng dữ liệu */
+.page-manage-product .data-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 16px;
+    margin-top: 10px;
     background: #fff;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 0 5px rgba(0,0,0,0.05);
 }
 
-.data-table th, .data-table td {
+.page-manage-product .data-table th,
+.page-manage-product .data-table td {
     padding: 10px 12px;
     text-align: left;
     border-bottom: 1px solid #eee;
 }
 
-.data-table th {
+.page-manage-product .data-table th {
     background: #f9fafc;
     font-weight: 600;
 }
 
-.status-active {
+.page-manage-product .status-active {
     color: green;
     font-weight: 500;
 }
 
-.status-disabled {
+.page-manage-product .status-disabled {
     color: red;
     font-weight: 500;
 }
 
-.btn-edit, .btn-delete {
+/* Buttons */
+.page-manage-product .btn-edit,
+.page-manage-product .btn-delete {
     border: none;
     background: #3498db;
     color: white;
@@ -39,15 +56,16 @@
     transition: 0.2s;
 }
 
-.btn-delete {
+.page-manage-product .btn-delete {
     background: #e74c3c;
 }
 
-.btn-edit:hover, .btn-delete:hover {
+.page-manage-product .btn-edit:hover,
+.page-manage-product .btn-delete:hover {
     opacity: 0.85;
 }
 
-.btn-primary {
+.page-manage-product .btn-primary {
     background: #27ae60;
     color: white;
     border: none;

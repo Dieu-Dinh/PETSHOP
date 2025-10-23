@@ -86,7 +86,7 @@ class AuthController {
     public function logout() {
     session_destroy();
     // Redirect to public login page (relative to public folder)
-    header('Location: login.php');
+    header('Location: index.php');
         exit;
     }
 }

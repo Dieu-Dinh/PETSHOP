@@ -148,3 +148,32 @@ body {
 .status.cancel { background: #e53935; }
 
 
+/* 🧭 Thanh tìm kiếm cố định ở trên main-content */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 10px 20px;
+    border-bottom: 1px solid #ddd;
+}
+
+#global-search {
+    width: 60%;
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    outline: none;
+    transition: 0.2s;
+}
+
+#global-search:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.4);
+}
+
+.admin-email {
+    font-size: 14px;
+    color: #555;
+}

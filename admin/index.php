@@ -29,7 +29,12 @@ $admin = $_SESSION['user']['email'];
 
         <!-- Main -->
         <main class="main-content" id="main-content">
+            <div class="top-bar">
+                <input type="text" id="global-search" placeholder="🔍 Tìm kiếm...">
+                <span class="admin-email"><?= htmlspecialchars($admin) ?></span>
+            </div>
             <!-- Nội dung sẽ được load ở đây -->
+            <div id="page-content"></div>
         </main>
     </div>
 
@@ -44,13 +49,13 @@ $admin = $_SESSION['user']['email'];
                 fetch(`${page}.php`)
                     .then(res => res.text())
                     .then(html => {
-                        document.getElementById('main-content').innerHTML = html;
+                        document.getElementById('page-content').innerHTML = html;
                         // Cập nhật active link
                         document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
                         e.target.classList.add('active');
                     })
                     .catch(err => {
-                        document.getElementById('main-content').innerHTML = "<p>Lỗi tải dữ liệu.</p>";
+                        document.getElementById('page-content').innerHTML = "<p>Lỗi tải dữ liệu.</p>";
                     });
             });
         });
@@ -59,7 +64,7 @@ $admin = $_SESSION['user']['email'];
         window.addEventListener('DOMContentLoaded', () => {
             fetch('dashboard.php')
                 .then(res => res.text())
-                .then(html => document.getElementById('main-content').innerHTML = html);
+                .then(html => document.getElementById('page-content').innerHTML = html);
         });
     </script>
 </body>
