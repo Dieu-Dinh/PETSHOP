@@ -32,6 +32,24 @@ class AuthController {
                     'role' => $user['role']
                 ];
 
+                // Nếu trước đó người dùng có giỏ hàng trong session (khách), merge vào DB cho user này
+                require_once __DIR__ . '/../models/Cart.php';
+                $cart = new Cart();
+                // 1) Merge any in-memory session cart array (older behavior)
+                if (!empty($_SESSION['cart']) && is_array($_SESSION['cart'])) {
+                    foreach ($_SESSION['cart'] as $pid => $item) {
+                        $qty = $item['quantity'] ?? 1;
+                        $cart->addToCart($pid, $qty);
+                    }
+                    unset($_SESSION['cart']);
+                }
+                // 2) Merge any cart stored in the DB keyed by session_id into the user's cart
+                if (session_status() === PHP_SESSION_NONE) session_start();
+                $sessId = session_id();
+                if ($sessId) {
+                    $cart->mergeSessionCartToUser($sessId, $user['id']);
+                }
+
                 // 🧭 Phân quyền điều hướng
                 if ($user['role'] === 'admin') {
                     // Admin dashboard sits in the admin folder at /PETSHOP/admin/

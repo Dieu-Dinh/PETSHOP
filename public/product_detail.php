@@ -26,7 +26,9 @@
             $product['image'] = $imgs[0]['url'];
         }
     }
-    ?>
+?>
+<link rel="stylesheet" href="assets/css/product_detail.css" />
+
 
     <div class="product-detail">
         <?php if ($product): ?>
