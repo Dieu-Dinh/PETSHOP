@@ -166,3 +166,34 @@
 .btn-action.refresh:hover {
     background-color: #2980b9;
 }
+
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+}
+.modal-content {
+    background: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    width: 400px;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+}
+.modal-content input, .modal-content select {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+.modal-actions {
+    text-align: right;
+}
+.modal-actions button {
+    margin-left: 10px;
+    padding: 6px 14px;
+}

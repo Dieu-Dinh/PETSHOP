@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../config/database.php';
 
 class User {
-    private $conn;
+    public $conn;
     private $table = "users";
 
     public function __construct() {
@@ -124,5 +124,10 @@ class User {
         $stmt->bindParam(':status', $status, PDO::PARAM_BOOL);
         return $stmt->execute();
     }
+
+    public function getConnection() {
+    return $this->conn;
+}
+
 
 }
