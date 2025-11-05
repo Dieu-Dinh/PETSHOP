@@ -1,34 +1,17 @@
 <!--Trang chính của website petshop -->
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
-
+// Proxy để client gọi API trong app/api an toàn hơn
+if (isset($_GET['__api']) && $_GET['__api'] === 'cart') {
+    require_once __DIR__ . '/../app/api/cart_api.php';
+    exit;
+}
 require_once __DIR__ . '/../app/config/database.php';
 require_once __DIR__ . '/../app/models/Category.php';
 require_once __DIR__ . '/../app/models/Product.php';
 require_once __DIR__ . '/../app/models/User.php';
 require_once __DIR__ . '/../app/controllers/CartController.php';
-
-//  Xử lý các hành động giỏ hàng (add/remove) nếu được gửi đến index.php
-if (isset($_GET['action'])) {
-    $cartAction = $_GET['action'];
-    $controller = new CartController();
-
-    if ($cartAction === 'add_to_cart') {
-        $controller->add();
-        exit;
-    }
-
-    if ($cartAction === 'remove') {
-        $controller->remove();
-        exit;
-    }
-        if ($cartAction === 'total') {
-            // total is expected to be an AJAX POST from cart UI
-            $controller->total();
-            exit;
-        }
-}
-
+require_once __DIR__ . '/../app/components/product_cart.php';
 
 
 $currentUser = null;
@@ -59,6 +42,8 @@ if (isset($pdo) && $pdo) {
     <?php if (isset($_GET['page']) && $_GET['page'] === 'cart'): ?>
         <link rel="stylesheet" href="assets/css/cart-modern.css" />
     <?php endif; ?>
+    <link rel="stylesheet" href="assets/css/category.css">
+    <link rel="stylesheet" href="assets/css/product_card.css">
 </head>
 
 <body>
@@ -88,11 +73,10 @@ if (isset($pdo) && $pdo) {
     <!-- Sidebar -->
     <aside class="sidebar left-sidebar">
         <h3>Danh mục</h3>
-        <ul class="categories">
-            <?php foreach ($categories as $cat): ?>
-                <li><a href="product.php?category=<?= htmlspecialchars($cat['id']) ?>"><?= htmlspecialchars($cat['name']) ?></a></li>
-            <?php endforeach; ?>
+        <ul class="categories" id="category-list">
+            <!-- Danh mục sẽ được load từ API bằng JS -->
         </ul>
+
     </aside>
 
     <!-- Main content -->
@@ -100,12 +84,7 @@ if (isset($pdo) && $pdo) {
         <?php
             // Render cart inside the main content when requested
             if (isset($_GET['page']) && $_GET['page'] === 'cart') {
-                $cartController = new CartController();
-                $cartItems = $cartController->index();
-                $cartMessage = $_SESSION['message'] ?? null;
-                // clear flash message after reading
-                unset($_SESSION['message']);
-                include 'partials/cart_content.php';
+                include 'cart.php';
 
             } elseif (isset($_GET['id'])) {
                 include 'product_detail.php';
@@ -120,31 +99,7 @@ if (isset($pdo) && $pdo) {
             <h2>Sản phẩm nổi bật</h2>
             <div class="product-grid">
                 <?php foreach ($products as $p): ?>
-                    <article class="product">
-                        <a href="?id=<?= htmlspecialchars($p['id']) ?>" class="product-link" data-id="<?= htmlspecialchars($p['id']) ?>">
-                            <div class="thumb">
-                                <?php if (!empty($p['image'])): ?>
-                                    <img src="<?= htmlspecialchars($p['image']) ?>" alt="<?= htmlspecialchars($p['name']) ?>" />
-                                <?php else: ?>
-                                    <div class="no-image">Không có ảnh</div>
-                                <?php endif; ?>
-                            </div>
-                        </a>
-                        <h3 class="title"><?= htmlspecialchars($p['name']) ?></h3>
-                        <div class="price"><?= number_format($p['price'], 0, ',', '.') ?> đ</div>
-
-                        <div class="actions">
-                            <form class="add-to-cart-form" data-id="<?= htmlspecialchars($p['id']) ?>" action="index.php?action=add_to_cart" method="post">
-                                <input type="hidden" name="product_id" value="<?= htmlspecialchars($p['id']) ?>">
-                                <button type="button" class="btn-cart add-to-cart">🛒 Thêm vào giỏ</button>
-                            </form>
-
-                            <form action="checkout_now.php" method="post">
-                                <input type="hidden" name="product_id" value="<?= htmlspecialchars($p['id']) ?>">
-                                <button type="submit" class="btn-buy">⚡ Mua ngay</button>
-                            </form>
-                        </div>
-                    </article>
+                    <?php renderProductCard($p); ?>
                 <?php endforeach; ?>
             </div>
         </section>
@@ -176,5 +131,8 @@ if (isset($pdo) && $pdo) {
 </footer>
 
 <script src="assets/js/index.js"></script>
+<script src="assets/js/productRender.js"></script>
+<script src="assets/js/productAction.js"></script>
+<script src="assets/js/category.js"></script> <!-- Thêm file JS quản lý danh mục sản phẩm-->
 </body>
 </html>

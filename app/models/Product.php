@@ -148,8 +148,8 @@ class Product
     {
         if (!$this->pdo) return [];
         $stmt = $this->pdo->prepare("
-            SELECT p.id, p.name, p.slug, p.price, 
-                   (SELECT url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) AS image
+            SELECT p.id, p.name, p.slug, p.price, p.category_id, p.stock_status,
+       (SELECT url FROM product_images WHERE product_id = p.id AND is_primary = 1 LIMIT 1) AS image
             FROM products p
             WHERE p.category_id = :cid AND p.status = 'active'
             ORDER BY p.created_at DESC

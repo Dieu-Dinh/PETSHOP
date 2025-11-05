@@ -1,39 +1,26 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) session_start();
+require_once __DIR__ . '/../app/controllers/CartController.php';
 
-<?php 
-    if (session_status() === PHP_SESSION_NONE) session_start();
-    require_once __DIR__ . '/../app/controllers/CartController.php';
+$controller = new CartController();
 
-    if (isset($_GET['action']) && $_GET['action'] === 'remove') {
-        $controller = new CartController();
-        $controller->remove();
-        exit;
-    }
-    // load cart items for rendering
-    $controller = new CartController();
-    $cartItems = $controller->index();
- ?>
+// Nếu có action xóa sản phẩm
+if (isset($_GET['action']) && $_GET['action'] === 'remove') {
+    $controller->remove();
+    exit;
+}
 
-<?php if (!empty($_SESSION['message'])): ?>
-    <div class="alert success"><?= $_SESSION['message'] ?></div>
-    <?php unset($_SESSION['message']); ?>
-<?php endif; ?>
+// Lấy danh sách sản phẩm trong giỏ
+$cartItems = $controller->index();
+$cartMessage = $_SESSION['message'] ?? null;
+unset($_SESSION['message']);
+?>
 
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <title>Giỏ hàng của bạn</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-    <link rel="stylesheet" href="assets/css/cart-modern.css">
-</head>
-
-<body>
-<main class="cart-container">
+<div class="cart-container">
     <h2 class="cart-title">🛒 Giỏ hàng của bạn</h2>
 
-    <!-- Thông báo khi thêm sản phẩm -->
-    <?php if (isset($_SESSION['message'])): ?>
-        <div class="alert"><?= htmlspecialchars($_SESSION['message']); unset($_SESSION['message']); ?></div>
+    <?php if (!empty($cartMessage)): ?>
+        <div class="alert"><?= htmlspecialchars($cartMessage) ?></div>
     <?php endif; ?>
 
     <?php if (!empty($cartItems)): ?>
@@ -66,7 +53,7 @@
                             <td><?= htmlspecialchars($item['quantity']) ?></td>
                             <td><?= number_format($item['price'] * $item['quantity'], 0, ',', '.') ?> đ</td>
                             <td>
-                                <a href="cart.php?action=remove&id=<?= htmlspecialchars($item['id']) ?>" class="btn-remove">Xóa</a>
+                                <a href="index.php?page=cart&action=remove&id=<?= htmlspecialchars($item['id']) ?>" class="btn-remove">Xóa</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -84,25 +71,24 @@
     <?php else: ?>
         <p style="text-align:center;">🛍 Giỏ hàng của bạn đang trống.</p>
     <?php endif; ?>
-</main>
-
+</div>
+<script src="assets/js/productAction.js"></script>
 <script>
 // Cập nhật tổng tiền khi tick chọn sản phẩm
 document.querySelectorAll('.select-item').forEach(chk => {
     chk.addEventListener('change', () => {
         const selected = Array.from(document.querySelectorAll('.select-item:checked')).map(i => i.value);
 
-        fetch('cart_api.php?action=total', {
+        fetch('index.php?__api=cart&action=total', {
             method: 'POST',
             headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: 'selected[]=' + selected.join('&selected[]=')
+            body: 'ids=' + selected.join(',')
         })
         .then(res => res.json())
         .then(data => {
-            document.getElementById('total-price').textContent = new Intl.NumberFormat('vi-VN').format(data.total);
+            const el = document.getElementById('total-price');
+            if (el) el.textContent = new Intl.NumberFormat('vi-VN').format(data.total);
         });
     });
 });
 </script>
-</body>
-</html>

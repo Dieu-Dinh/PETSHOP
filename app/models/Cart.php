@@ -11,134 +11,95 @@ class Cart
     public function __construct()
     {
         global $pdo;
-        $this->pdo = $pdo;
-        // session structure: $_SESSION['user']['id'] used across the app
-        if (session_status() === PHP_SESSION_NONE) @session_start();
+        $this->pdo = $pdo ?? null;
+
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         $this->isLoggedIn = isset($_SESSION['user']['id']);
         $this->userId = $_SESSION['user']['id'] ?? null;
-        $this->sessionId = session_id() ?: null;
+        $this->sessionId = session_id();
     }
 
-    /**  Lấy danh sách sản phẩm trong giỏ */
+    /** 🧺 Lấy danh sách sản phẩm trong giỏ hàng */
     public function getCartItems()
     {
-        // If DB not available, fall back to session cart if present
+        // Nếu không có DB, fallback qua session
         if (!$this->pdo) {
             return $_SESSION['cart'] ?? [];
         }
 
-        // We'll collect items into a map keyed by product_id and sum quantities
-        $itemsMap = [];
+        $cartId = $this->getCurrentCartId(false);
+        if (!$cartId) return [];
 
-        // 1) Items saved for the logged-in user (if any)
-        if ($this->isLoggedIn) {
-            $userCartId = $this->getCartIdForUser(false);
-            if ($userCartId) {
-                $ustmt = $this->pdo->prepare(
-                    "SELECT ci.id, p.id AS product_id, p.name, COALESCE(ci.price_snapshot, p.price) AS price, p.image, ci.quantity, ci.cart_id\n                     FROM cart_items ci\n                     LEFT JOIN products p ON ci.product_id = p.id\n                     WHERE ci.cart_id = ?"
-                );
-                $ustmt->execute([$userCartId]);
-                $uitems = $ustmt->fetchAll(PDO::FETCH_ASSOC);
-                foreach ($uitems as $it) {
-                    $pid = $it['product_id'];
-                    if (!isset($itemsMap[$pid])) {
-                        $itemsMap[$pid] = $it;
-                    } else {
-                        $itemsMap[$pid]['quantity'] += $it['quantity'];
-                    }
-                }
-            }
-        }
-
-        // 2) Items saved for the current session (guest cart) — include them too
-        if ($this->sessionId) {
-            $sessCartId = $this->getCartIdForSession(false);
-            if ($sessCartId) {
-                $sstmt = $this->pdo->prepare(
-                    "SELECT ci.id, p.id AS product_id, p.name, COALESCE(ci.price_snapshot, p.price) AS price, p.image, ci.quantity, ci.cart_id\n                     FROM cart_items ci\n                     LEFT JOIN products p ON ci.product_id = p.id\n                     WHERE ci.cart_id = ?"
-                );
-                $sstmt->execute([$sessCartId]);
-                $sitems = $sstmt->fetchAll(PDO::FETCH_ASSOC);
-                foreach ($sitems as $it) {
-                    $pid = $it['product_id'];
-                    if (!isset($itemsMap[$pid])) {
-                        $itemsMap[$pid] = $it;
-                    } else {
-                        $itemsMap[$pid]['quantity'] += $it['quantity'];
-                    }
-                }
-            }
-        }
-
-        // Convert map to indexed array with clean keys
-        $result = [];
-        foreach ($itemsMap as $pid => $row) {
-            $result[] = [
-                'id' => $row['id'],
-                'product_id' => $row['product_id'],
-                'name' => $row['name'],
-                'price' => $row['price'],
-                'image' => $row['image'],
-                'quantity' => $row['quantity']
-            ];
-        }
-        return $result;
+        $stmt = $this->pdo->prepare("
+            SELECT ci.id, p.id AS product_id, p.name, 
+                   COALESCE(ci.price_snapshot, p.price) AS price, 
+                   p.image, ci.quantity
+            FROM cart_items ci
+            LEFT JOIN products p ON ci.product_id = p.id
+            WHERE ci.cart_id = ?
+        ");
+        $stmt->execute([$cartId]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**  Thêm sản phẩm vào giỏ */
+    /** ➕ Thêm sản phẩm vào giỏ hàng */
     public function addToCart($productId, $quantity = 1)
     {
-        // If no DB connection, fall back to session cart behavior
+        // Nếu không có DB (chạy offline)
         if (!$this->pdo) {
             if (!isset($_SESSION['cart'])) $_SESSION['cart'] = [];
+
             if (isset($_SESSION['cart'][$productId])) {
                 $_SESSION['cart'][$productId]['quantity'] += $quantity;
             } else {
-                $stmt = $this->pdo->prepare("SELECT id, name, price, image FROM products WHERE id = ?");
-                $stmt->execute([$productId]);
-                $product = $stmt->fetch(PDO::FETCH_ASSOC);
-                if ($product) {
-                    $_SESSION['cart'][$productId] = [
-                        'id' => $product['id'],
-                        'name' => $product['name'],
-                        'price' => $product['price'],
-                        'image' => $product['image'],
-                        'quantity' => $quantity
-                    ];
-                }
+                $_SESSION['cart'][$productId] = [
+                    'id' => $productId,
+                    'name' => "Sản phẩm #$productId",
+                    'price' => 0,
+                    'image' => '',
+                    'quantity' => $quantity
+                ];
             }
-            return;
+            return true;
         }
 
-        // Use carts + cart_items schema: ensure we have a cart row for current context
+        // Nếu có DB, thêm vào bảng
         $cartId = $this->getCurrentCartId(true);
-        if (!$cartId) return;
+        if (!$cartId) return false;
 
-        // If item exists in cart_items for this cart_id + product_id, update quantity
+        // Kiểm tra nếu sản phẩm đã có trong giỏ
         $stmt = $this->pdo->prepare("SELECT id, quantity FROM cart_items WHERE cart_id = ? AND product_id = ?");
         $stmt->execute([$cartId, $productId]);
-        $item = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($item) {
-            $newQty = $item['quantity'] + $quantity;
+        $existing = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existing) {
+            $newQty = $existing['quantity'] + $quantity;
             $update = $this->pdo->prepare("UPDATE cart_items SET quantity = ? WHERE id = ?");
-            $update->execute([$newQty, $item['id']]);
+            $update->execute([$newQty, $existing['id']]);
         } else {
-            // obtain current product price as snapshot
             $pstmt = $this->pdo->prepare("SELECT price FROM products WHERE id = ?");
             $pstmt->execute([$productId]);
-            $prod = $pstmt->fetch(PDO::FETCH_ASSOC);
-            $priceSnapshot = $prod['price'] ?? null;
+            $product = $pstmt->fetch(PDO::FETCH_ASSOC);
+            $priceSnapshot = $product['price'] ?? 0;
 
-            $insert = $this->pdo->prepare("INSERT INTO cart_items (cart_id, product_id, quantity, price_snapshot) VALUES (?, ?, ?, ?)");
+            $insert = $this->pdo->prepare("
+                INSERT INTO cart_items (cart_id, product_id, quantity, price_snapshot)
+                VALUES (?, ?, ?, ?)
+            ");
             $insert->execute([$cartId, $productId, $quantity, $priceSnapshot]);
         }
+
+        return true;
     }
 
-    /**  Xóa sản phẩm khỏi giỏ */
-    public function removeItem($id)
+    /** ❌ Xóa sản phẩm khỏi giỏ hàng */
+    public function removeItem($itemId)
     {
         if (!$this->pdo) {
-            unset($_SESSION['cart'][$id]);
+            unset($_SESSION['cart'][$itemId]);
             return;
         }
 
@@ -146,36 +107,28 @@ class Cart
         if (!$cartId) return;
 
         $stmt = $this->pdo->prepare("DELETE FROM cart_items WHERE id = ? AND cart_id = ?");
-        $stmt->execute([$id, $cartId]);
+        $stmt->execute([$itemId, $cartId]);
     }
 
-    /**  Tính tổng tiền các sản phẩm được chọn */
-    public function calculateTotal($selectedIds = [])
+    /** 💰 Tính tổng tiền */
+    public function calculateTotal()
     {
-        $total = 0;
         $items = $this->getCartItems();
+        $total = 0;
+
         foreach ($items as $item) {
-            if (empty($selectedIds) || in_array($item['id'], $selectedIds)) {
-                $price = $item['price'] ?? 0;
-                $qty = $item['quantity'] ?? 0;
-                $total += $price * $qty;
-            }
+            $total += ($item['price'] ?? 0) * ($item['quantity'] ?? 1);
         }
+
         return $total;
     }
 
-    /**
-     * Helpers for cart id management
-     */
+    /** 🧩 Helpers */
     private function getCurrentCartId($createIfMissing = false)
     {
-        if (!$this->pdo) return null;
-
-        if ($this->isLoggedIn) {
-            return $this->getCartIdForUser($createIfMissing);
-        }
-
-        return $this->getCartIdForSession($createIfMissing);
+        return $this->isLoggedIn
+            ? $this->getCartIdForUser($createIfMissing)
+            : $this->getCartIdForSession($createIfMissing);
     }
 
     private function getCartIdForUser($createIfMissing = false)
@@ -183,77 +136,26 @@ class Cart
         $stmt = $this->pdo->prepare("SELECT id FROM carts WHERE user_id = ? LIMIT 1");
         $stmt->execute([$this->userId]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if ($row) return $row['id'];
 
-        if ($createIfMissing) {
-            $ins = $this->pdo->prepare("INSERT INTO carts (user_id, session_id) VALUES (?, ?) ");
-            $ins->execute([$this->userId, $this->sessionId]);
-            return $this->pdo->lastInsertId();
-        }
-        return null;
+        if ($row) return $row['id'];
+        if (!$createIfMissing) return null;
+
+        $ins = $this->pdo->prepare("INSERT INTO carts (user_id, session_id) VALUES (?, ?)");
+        $ins->execute([$this->userId, $this->sessionId]);
+        return $this->pdo->lastInsertId();
     }
 
     private function getCartIdForSession($createIfMissing = false)
     {
-        if (!$this->sessionId) return null;
         $stmt = $this->pdo->prepare("SELECT id FROM carts WHERE session_id = ? LIMIT 1");
         $stmt->execute([$this->sessionId]);
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
+
         if ($row) return $row['id'];
+        if (!$createIfMissing) return null;
 
-        if ($createIfMissing) {
-            $ins = $this->pdo->prepare("INSERT INTO carts (user_id, session_id) VALUES (NULL, ?) ");
-            $ins->execute([$this->sessionId]);
-            return $this->pdo->lastInsertId();
-        }
-        return null;
-    }
-
-    /** Move items from a session-based cart (by session_id) into the user's cart */
-    public function mergeSessionCartToUser($sessionId, $userId)
-    {
-        if (!$this->pdo) return;
-        if (!$sessionId || !$userId) return;
-
-        // find session cart
-        $stmt = $this->pdo->prepare("SELECT id FROM carts WHERE session_id = ? LIMIT 1");
-        $stmt->execute([$sessionId]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        if (!$row) return;
-        $sessionCartId = $row['id'];
-
-        // find or create user cart
-        $this->userId = $userId;
-        $userCartId = $this->getCartIdForUser(true);
-
-        // move items
-        $stmt = $this->pdo->prepare("SELECT product_id, quantity, price_snapshot FROM cart_items WHERE cart_id = ?");
-        $stmt->execute([$sessionCartId]);
-        $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        foreach ($items as $it) {
-            $productId = $it['product_id'];
-            $qty = $it['quantity'];
-
-            // if exists in user cart, update quantity, else insert
-            $check = $this->pdo->prepare("SELECT id, quantity FROM cart_items WHERE cart_id = ? AND product_id = ?");
-            $check->execute([$userCartId, $productId]);
-            $existing = $check->fetch(PDO::FETCH_ASSOC);
-            if ($existing) {
-                $newQ = $existing['quantity'] + $qty;
-                $up = $this->pdo->prepare("UPDATE cart_items SET quantity = ? WHERE id = ?");
-                $up->execute([$newQ, $existing['id']]);
-            } else {
-                $ins = $this->pdo->prepare("INSERT INTO cart_items (cart_id, product_id, quantity, price_snapshot) VALUES (?, ?, ?, ?)");
-                $ins->execute([$userCartId, $productId, $qty, $it['price_snapshot']]);
-            }
-        }
-
-        // remove session cart items and cart row
-        $del = $this->pdo->prepare("DELETE FROM cart_items WHERE cart_id = ?");
-        $del->execute([$sessionCartId]);
-        $delc = $this->pdo->prepare("DELETE FROM carts WHERE id = ?");
-        $delc->execute([$sessionCartId]);
+        $ins = $this->pdo->prepare("INSERT INTO carts (user_id, session_id) VALUES (NULL, ?)");
+        $ins->execute([$this->sessionId]);
+        return $this->pdo->lastInsertId();
     }
 }
-?>

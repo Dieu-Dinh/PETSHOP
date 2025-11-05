@@ -138,17 +138,17 @@
 
                     <!-- Nút thao tác -->
                     <div class="actions">
-                        <form method="post" action="cart_add.php">
-                            <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                            <input type="hidden" name="quantity" id="cartQuantity" value="1">
-                            <button class="btn-cart" type="submit">🛒 Thêm vào giỏ</button>
-                        </form>
+                        <button class="btn-cart add-to-cart" 
+                                data-id="<?= $product['id'] ?>" 
+                                data-qty-input="quantity">
+                            🛒 Thêm vào giỏ
+                        </button>
 
-                        <form method="post" action="checkout_now.php">
-                            <input type="hidden" name="product_id" value="<?= $product['id'] ?>">
-                            <input type="hidden" name="quantity" id="buyQuantity" value="1">
-                            <button class="btn-buy" type="submit">⚡ Mua ngay</button>
-                        </form>
+                        <button class="btn-buy buy-now" 
+                                data-id="<?= $product['id'] ?>" 
+                                data-qty-input="quantity">
+                            ⚡ Mua ngay
+                        </button>
                     </div>
                 </div>
             </div>
