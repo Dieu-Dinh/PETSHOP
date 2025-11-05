@@ -158,4 +158,72 @@ class Cart
         $ins->execute([$this->sessionId]);
         return $this->pdo->lastInsertId();
     }
+
+    public function mergeSessionCartToUser($sessionId, $userId)
+    {
+        if (!$this->pdo) return false;
+
+        try {
+            // 1️⃣ Lấy cart_id của session (khách)
+            $stmt = $this->pdo->prepare("SELECT id FROM carts WHERE session_id = ? AND user_id IS NULL LIMIT 1");
+            $stmt->execute([$sessionId]);
+            $guestCart = $stmt->fetch(PDO::FETCH_ASSOC);
+            if (!$guestCart) return false;
+
+            $guestCartId = $guestCart['id'];
+
+            // 2️⃣ Lấy hoặc tạo cart_id của user đã đăng nhập
+            $stmt = $this->pdo->prepare("SELECT id FROM carts WHERE user_id = ? LIMIT 1");
+            $stmt->execute([$userId]);
+            $userCart = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($userCart) {
+                $userCartId = $userCart['id'];
+            } else {
+                $insert = $this->pdo->prepare("INSERT INTO carts (user_id, session_id) VALUES (?, ?)");
+                $insert->execute([$userId, $sessionId]);
+                $userCartId = $this->pdo->lastInsertId();
+            }
+
+            // 3️⃣ Lấy tất cả item trong giỏ khách
+            $stmt = $this->pdo->prepare("SELECT product_id, quantity, price_snapshot FROM cart_items WHERE cart_id = ?");
+            $stmt->execute([$guestCartId]);
+            $guestItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // 4️⃣ Gộp từng sản phẩm vào giỏ user
+            foreach ($guestItems as $item) {
+                $check = $this->pdo->prepare("SELECT id, quantity FROM cart_items WHERE cart_id = ? AND product_id = ?");
+                $check->execute([$userCartId, $item['product_id']]);
+                $existing = $check->fetch(PDO::FETCH_ASSOC);
+
+                if ($existing) {
+                    // Cộng thêm số lượng
+                    $newQty = $existing['quantity'] + $item['quantity'];
+                    $update = $this->pdo->prepare("UPDATE cart_items SET quantity = ? WHERE id = ?");
+                    $update->execute([$newQty, $existing['id']]);
+                } else {
+                    // Thêm mới
+                    $insertItem = $this->pdo->prepare("
+                        INSERT INTO cart_items (cart_id, product_id, quantity, price_snapshot)
+                        VALUES (?, ?, ?, ?)
+                    ");
+                    $insertItem->execute([
+                        $userCartId,
+                        $item['product_id'],
+                        $item['quantity'],
+                        $item['price_snapshot']
+                    ]);
+                }
+            }
+
+            // 5️⃣ Xóa giỏ hàng khách sau khi merge
+            $this->pdo->prepare("DELETE FROM cart_items WHERE cart_id = ?")->execute([$guestCartId]);
+            $this->pdo->prepare("DELETE FROM carts WHERE id = ?")->execute([$guestCartId]);
+
+            return true;
+        } catch (PDOException $e) {
+            error_log("❌ Merge session cart error: " . $e->getMessage());
+            return false;
+        }
+    }
 }

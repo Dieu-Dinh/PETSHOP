@@ -1,19 +1,5 @@
-/* === RESET CƠ BẢN === */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    font-family: "Segoe UI", Roboto, sans-serif;
-}
-
-body {
-    background-color: #f4f6f8;
-    color: #333;
-    padding: 20px;
-}
-
 /* === KHUNG CHÍNH === */
-.manage-section {
+.main-content .manage-section {
     background: #fff;
     padding: 25px;
     border-radius: 12px;
@@ -22,43 +8,54 @@ body {
     margin: 40px auto;
 }
 
-.manage-section h2 {
+.main-content .manage-section h2 {
     font-size: 1.6rem;
     font-weight: 600;
     color: #2c3e50;
     margin-bottom: 20px;
 }
 
+.main-content #user-search {
+    width: 50%;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
 /* === BẢNG NGƯỜI DÙNG === */
-.admin-table {
+.main-content .admin-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 15px;
 }
 
-.admin-table thead {
+.main-content .admin-table thead {
     background-color: #34495e;
     color: #fff;
 }
 
-.admin-table th, .admin-table td {
+.main-content .admin-table th, 
+.main-content .admin-table td {
     text-align: left;
     padding: 12px 15px;
     border-bottom: 1px solid #e0e0e0;
 }
 
-.admin-table tr:hover {
+.main-content .admin-table tr:hover {
     background-color: #f9f9f9;
 }
 
 /* === CỘT TRẠNG THÁI === */
-.admin-table td:nth-child(6) {
+.main-content .admin-table td:nth-child(6) {
     text-align: center;
     font-size: 18px;
 }
 
 /* === NÚT HÀNH ĐỘNG === */
-.btn-edit, .btn-delete {
+.main-content .btn-edit, 
+.main-content .btn-delete {
     padding: 6px 12px;
     border: none;
     border-radius: 6px;
@@ -67,32 +64,32 @@ body {
     transition: all 0.25s ease;
 }
 
-.btn-edit {
+.main-content .btn-edit {
     background-color: #3498db;
     color: white;
     margin-right: 8px;
 }
 
-.btn-edit:hover {
+.main-content .btn-edit:hover {
     background-color: #2980b9;
 }
 
-.btn-delete {
+.main-content .btn-delete {
     background-color: #e74c3c;
     color: white;
 }
 
-.btn-delete:hover {
+.main-content .btn-delete:hover {
     background-color: #c0392b;
 }
 
 /* === RESPONSIVE === */
 @media (max-width: 768px) {
-    .admin-table thead {
+    .main-content .admin-table thead {
         display: none;
     }
 
-    .admin-table tr {
+    .main-content .admin-table tr {
         display: block;
         margin-bottom: 10px;
         background: #fff;
@@ -100,7 +97,7 @@ body {
         box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
 
-    .admin-table td {
+    .main-content .admin-table td {
         display: flex;
         justify-content: space-between;
         padding: 10px 15px;
@@ -108,13 +105,64 @@ body {
         border-bottom: 1px solid #eee;
     }
 
-    .admin-table td:last-child {
+    .main-content .admin-table td:last-child {
         border-bottom: none;
     }
 
-    .admin-table td::before {
+    .main-content .admin-table td::before {
         content: attr(data-label);
         font-weight: bold;
         color: #555;
     }
+}
+
+
+/* === THANH TÌM KIẾM + NÚT HÀNH ĐỘNG === */
+.user-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+#user-search {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    max-width: 60%;
+}
+
+.user-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-action {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.25s ease;
+}
+
+.btn-action.add {
+    background-color: #2ecc71;
+    color: white;
+}
+
+.btn-action.add:hover {
+    background-color: #27ae60;
+}
+
+.btn-action.refresh {
+    background-color: #3498db;
+    color: white;
+}
+
+.btn-action.refresh:hover {
+    background-color: #2980b9;
 }

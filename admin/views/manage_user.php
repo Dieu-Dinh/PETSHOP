@@ -1,13 +1,23 @@
 <?php
-// Include the User model from app/models
-require_once __DIR__ . '/../app/models/User.php';
+require_once __DIR__ . '/../../app/models/User.php';
 $userModel = new User();
-// model method is named getAllUsers()
 $users = $userModel->getAllUsers() ?: [];
 ?>
+
 <section class="manage-section">
     <link rel="stylesheet" href="assets/css/manageUser.css">
+
     <h2>👤 Quản lý người dùng</h2>
+
+    <div class="user-header">
+        <input type="text" id="user-search" placeholder="🔍 Tìm kiếm người dùng...">
+
+        <div class="user-actions">
+            <button id="btn-add" class="btn-action add">➕ Thêm</button>
+            <button id="btn-refresh" class="btn-action refresh">🔄 Làm mới</button>
+        </div>
+    </div>
+
     <table class="admin-table">
         <thead>
             <tr>

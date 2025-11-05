@@ -15,57 +15,79 @@ $admin = $_SESSION['user']['email'];
 </head>
 <body>
     <div class="admin-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <h2 class="logo">🐾 PetShop</h2>
-            <ul class="menu">
-                <li><a href="#" class="menu-link active" data-page="dashboard">📊 Bảng điều khiển</a></li>
-                <li><a href="#" class="menu-link" data-page="manage_user">👤 Quản lý người dùng</a></li>
-                <li><a href="#" class="menu-link" data-page="manage_product">🛒 Quản lý sản phẩm</a></li>
-                <li><a href="#" class="menu-link" data-page="manage_order">📦 Quản lý đơn hàng</a></li>
-            </ul>
-            <a href="/PETSHOP/public/auth.php?action=logout" class="logout-btn">🚪 Đăng xuất</a>
-        </aside>
+        <!-- 🧭 Sidebar -->
+        <?php include __DIR__ . '/partials/sidebar.php'; ?>
 
-        <!-- Main -->
+        <!-- 📄 Main -->
         <main class="main-content" id="main-content">
-            <div class="top-bar">
-                <input type="text" id="global-search" placeholder="🔍 Tìm kiếm...">
-                <span class="admin-email"><?= htmlspecialchars($admin) ?></span>
-            </div>
-            <!-- Nội dung sẽ được load ở đây -->
-            <div id="page-content"></div>
+            <?php include __DIR__ . '/partials/header.php'; ?>
+
+            <!-- Nội dung trang -->
+            <div id="page-content" class="p-3"></div>
+
+            <?php include __DIR__ . '/partials/footer.php'; ?>
         </main>
     </div>
 
     <script>
-        // Khi bấm vào menu thì load nội dung vào #main-content
-        document.querySelectorAll('.menu-link').forEach(link => {
-            link.addEventListener('click', e => {
-                e.preventDefault();
-                const page = e.target.getAttribute('data-page');
+        /**
+         * 🔄 Hàm tải trang con
+         * @param {string} page - tên trang (ví dụ: manage_user)
+         */
+        async function loadPage(page) {
+            try {
+                const res = await fetch(`views/${page}.php`);
+                if (!res.ok) throw new Error("Trang không tồn tại!");
 
-                // Gọi tới PHP partial tương ứng
-                fetch(`${page}.php`)
-                    .then(res => res.text())
-                    .then(html => {
-                        document.getElementById('page-content').innerHTML = html;
-                        // Cập nhật active link
-                        document.querySelectorAll('.menu-link').forEach(l => l.classList.remove('active'));
-                        e.target.classList.add('active');
-                    })
-                    .catch(err => {
-                        document.getElementById('page-content').innerHTML = "<p>Lỗi tải dữ liệu.</p>";
-                    });
+                const html = await res.text();
+                const container = document.getElementById("page-content");
+                container.innerHTML = html;
+
+                // 🔥 Sau khi load xong HTML → nạp script tương ứng (nếu có)
+                loadPageScript(page);
+            } catch (err) {
+                document.getElementById("page-content").innerHTML = `<p>❌ Lỗi tải trang: ${err.message}</p>`;
+            }
+        }
+
+        /**
+         * 📜 Hàm nạp JS riêng của từng module (nếu tồn tại)
+         * @param {string} page - tên trang (ví dụ: manage_user)
+         */
+        function loadPageScript(page) {
+            const scriptPath = `assets/js/${page}.js`;
+
+            // Xóa script cũ nếu có
+            document.querySelectorAll("script[data-dynamic]").forEach(s => s.remove());
+
+            // Tạo thẻ script mới
+            const script = document.createElement("script");
+            script.src = scriptPath + "?v=" + Date.now(); // tránh cache
+            script.dataset.dynamic = "true";
+            script.defer = true;
+            document.body.appendChild(script);
+
+            // Log ra console để debug
+            console.log(`📦 Loaded JS: ${scriptPath}`);
+        }
+
+        // 🧭 Xử lý click menu
+        document.querySelectorAll(".menu-link").forEach(link => {
+            link.addEventListener("click", e => {
+                e.preventDefault();
+                const page = e.target.dataset.page;
+
+                // Tải nội dung trang
+                loadPage(page);
+
+                // Đổi trạng thái active
+                document.querySelectorAll(".menu-link").forEach(l => l.classList.remove("active"));
+                e.target.classList.add("active");
             });
         });
 
-        // Mặc định load dashboard khi vào trang
-        window.addEventListener('DOMContentLoaded', () => {
-            fetch('dashboard.php')
-                .then(res => res.text())
-                .then(html => document.getElementById('page-content').innerHTML = html);
-        });
+        // 🏁 Mặc định load Dashboard
+        window.addEventListener("DOMContentLoaded", () => loadPage("dashboard"));
     </script>
 </body>
 </html>
