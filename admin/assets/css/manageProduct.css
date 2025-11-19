@@ -1,75 +1,220 @@
-.page-manage-product {
+.manage-section {
     padding: 20px;
-    background: transparent; /* để không đè topbar */
 }
 
-/* Header */
-.page-manage-product .content-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+h2 {
     margin-bottom: 15px;
 }
 
-/* Bảng dữ liệu */
-.page-manage-product .data-table {
+/* Header */
+.product-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 15px;
+}
+
+#product-search {
+    padding: 8px 12px;
+    width: 250px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+.product-actions .btn-action {
+    padding: 8px 12px;
+    margin-left: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn-action.add {
+    background: #28a745;
+    color: white;
+}
+
+.btn-action.refresh {
+    background: #17a2b8;
+    color: white;
+}
+
+/* Table */
+.admin-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 10px;
-    background: #fff;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 0 5px rgba(0,0,0,0.05);
 }
 
-.page-manage-product .data-table th,
-.page-manage-product .data-table td {
-    padding: 10px 12px;
-    text-align: left;
-    border-bottom: 1px solid #eee;
+.admin-table th {
+    background: #007bff;
+    color: white;
+    padding: 10px;
 }
 
-.page-manage-product .data-table th {
-    background: #f9fafc;
-    font-weight: 600;
+.admin-table td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
 }
 
-.page-manage-product .status-active {
-    color: green;
-    font-weight: 500;
+.admin-table tr:hover {
+    background: #f9f9f9;
 }
 
-.page-manage-product .status-disabled {
-    color: red;
-    font-weight: 500;
+.product-img {
+    width: 45px;
+    height: 45px;
+    object-fit: cover;
+    border-radius: 4px;
 }
 
 /* Buttons */
-.page-manage-product .btn-edit,
-.page-manage-product .btn-delete {
+.btn-edit {
+    background: #ffc107;
     border: none;
-    background: #3498db;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn-delete {
+    background: #dc3545;
     color: white;
-    padding: 6px 10px;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+.loading {
+    text-align: center;
+    padding: 15px;
+}
+
+/* ================================
+   ⭐ STATUS BADGE (Trạng thái đẹp)
+   ================================ */
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.status-badge.active {
+    background: #d4f8d4;
+    color: #0b8a0b;
+}
+
+.status-badge.disabled {
+    background: #ffd6d6;
+    color: #cc0000;
+}
+
+/* Nút chuyển trạng thái */
+.btn-status {
+    margin-left: 10px;
+    padding: 5px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background: #6c757d;
+    color: white;
+}
+
+.btn-status:hover {
+    opacity: 0.8;
+}
+
+/* ================================
+   ⭐ MODAL FORM
+   ================================ */
+.modal {
+    position: fixed;
+    top: 0; 
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    overflow-y: auto; /* Cho phép scroll khi modal cao */
+    padding: 20px; /* Khoảng cách khi scroll */
+}
+
+.modal-content {
+    width: 600px; /* Rộng hơn */
+    max-width: 100%;
+    max-height: 90vh; /* Chiều cao tối đa bằng 90% viewport */
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    animation: fadeIn 0.2s ease;
+    overflow-y: auto; /* Scroll bên trong modal nếu nội dung dài */
+    box-sizing: border-box;
+}
+
+.modal-content h3 {
+    margin-top: 0;
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+    width: 100%;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+.modal-content textarea {
+    resize: vertical;
+    min-height: 60px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 15px;
+}
+
+.modal-actions button {
+    padding: 8px 14px;
+    margin-left: 10px;
+    border: none;
     border-radius: 6px;
     cursor: pointer;
-    transition: 0.2s;
 }
 
-.page-manage-product .btn-delete {
-    background: #e74c3c;
-}
-
-.page-manage-product .btn-edit:hover,
-.page-manage-product .btn-delete:hover {
-    opacity: 0.85;
-}
-
-.page-manage-product .btn-primary {
-    background: #27ae60;
+#btn-cancel {
+    background: #6c757d;
     color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
+}
+
+#btn-save {
+    background: #28a745;
+    color: white;
+}
+
+/* ================================
+   ⭐ ANIMATION
+   ================================ */
+@keyframes fadeIn {
+    from {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* ================================
+   ⭐ KHÓA NỀN KHI MỞ MODAL
+   ================================ */
+.modal-open *:not(.modal):not(.modal *) {
+    pointer-events: none !important;
+    opacity: 0.4;
 }
