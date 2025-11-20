@@ -42,6 +42,7 @@ if (isset($pdo) && $pdo) {
                 } else {
                     include 'main/hero.php';
                     include 'main/featured_products.php';
+                    include 'main/blog_tip.php';
                 }
             ?>
         </main>
