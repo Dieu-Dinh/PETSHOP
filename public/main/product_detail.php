@@ -1,5 +1,5 @@
     <?php
-    require_once __DIR__ . '/../app/config/database.php';
+    require_once __DIR__ . '/../../app/config/database.php';
 
     if (!isset($_GET['id'])) {
         echo "<p>Không tìm thấy sản phẩm.</p>";
@@ -17,7 +17,7 @@
     $stmt->execute([$product_id]);
     $product = $stmt->fetch(PDO::FETCH_ASSOC);
     // If product has no main image, attempt to load from product_images table via model
-    require_once __DIR__ . '/../app/models/Product.php';
+    require_once __DIR__ . '/../../app/models/Product.php';
     $productModel = new Product($pdo ?? null);
     if ($product && empty($product['image'])) {
         $imgs = $productModel->getProductImages($product_id);
@@ -27,7 +27,7 @@
         }
     }
 ?>
-<link rel="stylesheet" href="assets/css/product_detail.css" />
+<link rel="stylesheet" href="/PETSHOP/public/assets/css/product_detail.css" />
 
 
     <div class="product-detail">
@@ -37,47 +37,45 @@
                 <div class="product-detail-image">
                         <div class="product-images">
                             <?php
-                            // Resolve product image similar to homepage logic
-                            $imgSrc = '';
+                            // Normalize image value into a usable public URL
                             $raw = isset($product['image']) ? trim($product['image']) : '';
 
-                            if ($raw !== '' && (preg_match('#^https?://#i', $raw) || strpos($raw, '//') === 0 || strpos($raw, 'data:') === 0)) {
-                                $imgSrc = $raw;
-                            } else {
-                                $candidates = [];
-                                if ($raw !== '') {
-                                    $candidates[] = $raw; // raw value
-                                    $candidates[] = '../' . ltrim($raw, '/');
-                                    $candidates[] = '../images/products/' . ltrim($raw, '/');
+                            function normalize_product_image($rawVal, $productId) {
+                                // default placeholder
+                                $placeholder = '/PETSHOP/public/assets/images/placeholder.png';
+                                if (empty($rawVal)) {
+                                    // try product id based files later
+                                } else {
+                                    $v = trim($rawVal);
+                                    if (preg_match('#^https?://#i', $v) || strpos($v, 'data:') === 0) return $v;
+                                    // root-relative path (starts with '/')
+                                    if (strpos($v, '/') === 0) {
+                                        // if already points into public, keep; otherwise map into public
+                                        if (stripos($v, '/public/') === 0 || stripos($v, '/PETSHOP/public/') === 0) return $v;
+                                        // map '/images/...' -> '/PETSHOP/public/images/...'
+                                        if (stripos($v, '/images/') === 0) return '/PETSHOP/public' . $v;
+                                        return $v;
+                                    }
+                                    // repo-relative like images/products/...
+                                    if (stripos($v, 'images/') !== false) return '/PETSHOP/public/' . ltrim($v, '/');
+                                    // bare filename: check in public/images/products
+                                    $base = basename($v);
+                                    $candidateFs = realpath(__DIR__ . '/../../public/images/products/' . $base);
+                                    if ($candidateFs && file_exists($candidateFs)) return '/PETSHOP/public/images/products/' . $base;
                                 }
 
-                                // Try product id based filenames
+                                // Try product id based filenames in public/images/products
                                 $exts = ['jpg','jpeg','png','gif','webp'];
                                 foreach ($exts as $ext) {
-                                    $candidates[] = '../images/products/' . $product['id'] . '.' . $ext;
+                                    $fn = $productId . '.' . $ext;
+                                    $fs = realpath(__DIR__ . '/../../public/images/products/' . $fn);
+                                    if ($fs && file_exists($fs)) return '/PETSHOP/public/images/products/' . $fn;
                                 }
 
-                                $candidates[] = 'assets/images/placeholder.png';
-
-                                foreach ($candidates as $cand) {
-                                    if (preg_match('#^https?://#i', $cand) || strpos($cand, '//') === 0 || strpos($cand, 'data:') === 0) {
-                                        $imgSrc = $cand;
-                                        break;
-                                    }
-
-                                    $fs = realpath(__DIR__ . '/' . $cand);
-                                    if ($fs && file_exists($fs)) {
-                                        $imgSrc = $cand;
-                                        break;
-                                    }
-
-                                    $fs2 = realpath(__DIR__ . '/../' . ltrim($cand, '/'));
-                                    if ($fs2 && file_exists($fs2)) {
-                                        $imgSrc = '../' . ltrim($cand, '/');
-                                        break;
-                                    }
-                                }
+                                return $placeholder;
                             }
+
+                            $imgSrc = normalize_product_image($raw, $product['id'] ?? $product_id);
                             ?>
 
                             <?php if (!empty($imgSrc)): ?>

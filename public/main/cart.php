@@ -1,6 +1,6 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
-require_once __DIR__ . '/../app/controllers/CartController.php';
+require_once __DIR__ . '/../../app/controllers/CartController.php';
 
 $controller = new CartController();
 
@@ -15,6 +15,8 @@ $cartItems = $controller->index();
 $cartMessage = $_SESSION['message'] ?? null;
 unset($_SESSION['message']);
 ?>
+
+<link rel="stylesheet" href="/PETSHOP/public/assets/css/cart.css" />
 
 <div class="cart-container">
     <h2 class="cart-title">🛒 Giỏ hàng của bạn</h2>
@@ -39,7 +41,7 @@ unset($_SESSION['message']);
                 </thead>
                 <tbody>
                     <?php foreach ($cartItems as $item): ?>
-                        <tr>
+                        <tr class="cart-row" data-id="<?= htmlspecialchars($item['id']) ?>">
                             <td><input type="checkbox" class="select-item" value="<?= htmlspecialchars($item['id']) ?>"></td>
                             <td>
                                 <?php if (!empty($item['image'])): ?>

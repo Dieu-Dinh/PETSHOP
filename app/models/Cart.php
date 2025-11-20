@@ -33,16 +33,27 @@ class Cart
         $cartId = $this->getCurrentCartId(false);
         if (!$cartId) return [];
 
-        $stmt = $this->pdo->prepare("
-            SELECT ci.id, p.id AS product_id, p.name, 
-                   COALESCE(ci.price_snapshot, p.price) AS price, 
-                   p.image, ci.quantity
-            FROM cart_items ci
-            LEFT JOIN products p ON ci.product_id = p.id
-            WHERE ci.cart_id = ?
-        ");
+            $stmt = $this->pdo->prepare("
+                SELECT ci.id,
+                       p.id AS product_id,
+                       p.name,
+                       COALESCE(ci.price_snapshot, p.price) AS price,
+                       COALESCE(p.image, pi.url) AS image,
+                       ci.quantity
+                FROM cart_items ci
+                LEFT JOIN products p ON ci.product_id = p.id
+                LEFT JOIN product_images pi ON pi.product_id = p.id AND pi.is_primary = 1
+                WHERE ci.cart_id = ?
+            ");
         $stmt->execute([$cartId]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Normalize image URLs so views can directly use them
+        foreach ($rows as &$r) {
+            $r['image'] = $this->normalizeImageUrlForPublic($r['image'] ?? '', $r['product_id'] ?? null);
+        }
+
+        return $rows;
     }
 
     /** ➕ Thêm sản phẩm vào giỏ hàng */
@@ -121,6 +132,58 @@ class Cart
         }
 
         return $total;
+    }
+
+    /**
+     * Convert a DB-stored image value into a public URL the browser can load.
+     * Handles full URLs, root-relative, repo-relative (images/...), bare filenames,
+     * and falls back to a placeholder.
+     */
+    private function normalizeImageUrlForPublic($rawVal, $productId)
+    {
+        $raw = trim((string)$rawVal);
+
+        // 1) full URL or data URI
+        if ($raw !== '' && (preg_match('#^https?://#i', $raw) || strpos($raw, 'data:') === 0)) {
+            return $raw;
+        }
+
+        // 2) root-relative path
+        if ($raw !== '' && strpos($raw, '/') === 0) {
+            // If path already points into public, keep it. Otherwise prefix public folder.
+            if (stripos($raw, '/public/') === 0) return $raw;
+            return '/PETSHOP/public' . $raw;
+        }
+
+        // 3) repo-relative like images/products/...
+        if ($raw !== '' && stripos($raw, 'images/') !== false) {
+            // Map repo-relative to public folder URL
+            return '/PETSHOP/public/' . ltrim($raw, '/');
+        }
+
+        // 4) bare filename -> check in public/images/products
+        if ($raw !== '') {
+            $base = basename($raw);
+            $fs = realpath(__DIR__ . '/../../public/images/products/' . $base);
+            if ($fs && file_exists($fs)) {
+                return '/PETSHOP/public/images/products/' . $base;
+            }
+        }
+
+        // 5) try product-id-based filenames
+        if (!empty($productId)) {
+            $exts = ['jpg','jpeg','png','gif','webp'];
+            foreach ($exts as $ext) {
+                $fn = $productId . '.' . $ext;
+                $fs = realpath(__DIR__ . '/../../public/images/products/' . $fn);
+                if ($fs && file_exists($fs)) {
+                    return '/PETSHOP/public/images/products/' . $fn;
+                }
+            }
+        }
+
+        // 6) fallback placeholder
+        return '/PETSHOP/public/assets/images/placeholder.png';
     }
 
     /** 🧩 Helpers */
