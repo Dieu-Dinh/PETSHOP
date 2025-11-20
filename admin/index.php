@@ -12,6 +12,7 @@ $admin = $_SESSION['user']['email'];
     <meta charset="UTF-8">
     <title>Trang quản trị | PetShop</title>
     <link rel="stylesheet" href="assets/css/admin.css">
+    <link rel="stylesheet" href="assets/css/manageCategory.css">
 </head>
 <body>
     <div class="admin-container">
