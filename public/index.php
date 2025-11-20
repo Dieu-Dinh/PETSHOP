@@ -1,5 +1,7 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) session_start();
+// Ensure the browser interprets pages as UTF-8
+header('Content-Type: text/html; charset=utf-8');
 require_once __DIR__ . '/../app/config/database.php';
 require_once __DIR__ . '/../app/models/Category.php';
 require_once __DIR__ . '/../app/models/Product.php';
@@ -26,6 +28,8 @@ if (isset($pdo) && $pdo) {
     <link rel="stylesheet" href="assets/css/style.css" />
     <link rel="stylesheet" href="assets/css/category.css">
     <link rel="stylesheet" href="assets/css/product_card.css">
+    <link rel="stylesheet" href="assets/css/product_filter.css">
+    <link rel="stylesheet" href="assets/css/footer.css">
 </head>
 <body>
     <?php include 'partials/header.php'; ?>
@@ -37,6 +41,12 @@ if (isset($pdo) && $pdo) {
             <?php
                 if (isset($_GET['page']) && $_GET['page'] === 'cart') {
                     include 'main/cart.php';
+                } elseif (isset($_GET['page']) && $_GET['page'] === 'products') {
+                    include 'main/product.php';
+                } elseif (isset($_GET['page']) && (($_GET['page'] === 'gioithieu') || ($_GET['page'] === 'gioithieu.html'))) {
+                    include 'main/gioithieu.html';
+                } elseif (isset($_GET['page']) && (($_GET['page'] === 'chinhSachDoiTra') || ($_GET['page'] === 'chinhSachDoiTra.html'))) {
+                    include 'main/chinhSachDoiTra.html';
                 } elseif (isset($_GET['id'])) {
                     include 'main/product_detail.php';
                 } else {
@@ -51,6 +61,7 @@ if (isset($pdo) && $pdo) {
     <?php include 'partials/footer.php'; ?>
 
     <script src="assets/js/index.js"></script>
+    <script src="assets/js/product_filter.js"></script>
     <script src="assets/js/productRender.js"></script>
     <script src="assets/js/productAction.js"></script>
     <script src="assets/js/category.js"></script>

@@ -1,0 +1,4 @@
+# Ensure files served from this folder use UTF-8
+AddDefaultCharset UTF-8
+# Ensure common file types are labeled as UTF-8
+AddCharset UTF-8 .html .htm .php .css .js

@@ -1,0 +1,45 @@
+.footer {
+    background-color: #616362;
+    color: #fff;
+    padding: 20px 0;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap; /* giúp responsive trên mobile */
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.footer-item {
+    flex: 1;
+    min-width: 200px; /* tránh quá nhỏ trên màn hình nhỏ */
+    margin: 10px;
+}
+
+.footer-item h4 {
+    margin-bottom: 8px;
+    font-size: 16px;
+    color: #f5f5f5;
+}
+
+.footer-item p,
+.footer-item a {
+    color: #ccc;
+    text-decoration: none;
+}
+
+.footer-item a:hover {
+    color: #fff;
+}
+
+.footer-copy {
+    text-align: center;
+    margin-top: 15px;
+    color: #999;
+    font-size: 13px;
+}

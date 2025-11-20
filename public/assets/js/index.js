@@ -5,12 +5,68 @@ document.addEventListener('DOMContentLoaded', function(){
 
     // 🔹 Giữ phần load sản phẩm chi tiết
     const mainContent = document.getElementById('main-content');
+
+    // Intercept header search form to load results into #main-content via AJAX
+    const headerSearch = document.querySelector('.search-form');
+    if (headerSearch && mainContent) {
+        headerSearch.addEventListener('submit', function (ev) {
+            ev.preventDefault();
+            const q = (this.q && this.q.value) ? this.q.value.trim() : '';
+            // Build URL to load: ensure we request the full index page with the products view
+            const url = q ? `index.php?page=products&q=${encodeURIComponent(q)}` : 'index.php?page=products';
+            mainContent.innerHTML = '<p style="text-align:center;">Đang tải sản phẩm...</p>';
+
+            fetch(url)
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const newMain = doc.querySelector('#main-content');
+                    if (newMain) mainContent.innerHTML = newMain.innerHTML;
+                    // update URL in address bar so users can bookmark/share
+                    window.history.pushState({}, '', url.replace(/^index\.php/, 'index.php'));
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                })
+                .catch(() => {
+                    mainContent.innerHTML = '<p style="color:red;">Lỗi khi tải sản phẩm.</p>';
+                });
+        });
+    }
     document.body.addEventListener('click', function (e) {
-        const link = e.target.closest('.product-link');
-        if (!link) return;
+        // If the user clicked a regular anchor that points to the product listing
+        const anchor = e.target.closest('a');
+        if (anchor && mainContent) {
+            const href = anchor.getAttribute('href') || '';
+            // Only handle links explicitly marked for AJAX navigation
+            if (anchor.classList && anchor.classList.contains('ajax-nav')) {
+                e.preventDefault();
+                mainContent.innerHTML = '<p style="text-align:center;">Đang tải sản phẩm...</p>';
+
+                fetch(href)
+                    .then(res => res.text())
+                    .then(html => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        // prefer #main-content from full pages; fallback to <main>
+                        const newMain = doc.querySelector('#main-content') || doc.querySelector('main');
+                        if (newMain) mainContent.innerHTML = newMain.innerHTML;
+                        window.history.pushState({}, '', href);
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    })
+                    .catch(() => {
+                        mainContent.innerHTML = '<p style="color:red;">Lỗi khi tải sản phẩm.</p>';
+                    });
+
+                return;
+            }
+        }
+
+        // Existing product link behavior (product cards)
+        const productLink = e.target.closest('.product-link');
+        if (!productLink) return;
 
         e.preventDefault();
-        const url = link.getAttribute('href');
+        const url = productLink.getAttribute('href');
 
         if (!mainContent) return;
         mainContent.innerHTML = '<p style="text-align:center;">Đang tải chi tiết sản phẩm...</p>';
