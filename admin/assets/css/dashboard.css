@@ -1,0 +1,9 @@
+.admin-dashboard{padding:16px;font-family:Arial,Helvetica,sans-serif}
+.admin-dashboard h2{margin-bottom:12px}
+.kpi-row{display:flex;gap:12px;flex-wrap:wrap}
+.kpi-card{background:#fff;border:1px solid #e0e0e0;padding:12px;border-radius:6px;min-width:160px;flex:1}
+.kpi-label{font-size:12px;color:#666}
+.kpi-value{font-size:20px;font-weight:700;margin-top:6px}
+.recent-orders{margin-top:18px}
+.recent-orders-table{width:100%;border-collapse:collapse}
+.recent-orders-table th,.recent-orders-table td{padding:8px;border:1px solid #eee;text-align:left}
