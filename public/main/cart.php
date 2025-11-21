@@ -41,7 +41,7 @@ unset($_SESSION['message']);
                 </thead>
                 <tbody>
                     <?php foreach ($cartItems as $item): ?>
-                        <tr class="cart-row" data-id="<?= htmlspecialchars($item['id']) ?>">
+                        <tr class="cart-row" data-id="<?= htmlspecialchars($item['id']) ?>" data-total="<?= ($item['price'] * $item['quantity']) ?>">
                             <td><input type="checkbox" class="select-item" value="<?= htmlspecialchars($item['id']) ?>"></td>
                             <td>
                                 <?php if (!empty($item['image'])): ?>
@@ -74,23 +74,4 @@ unset($_SESSION['message']);
         <p style="text-align:center;">🛍 Giỏ hàng của bạn đang trống.</p>
     <?php endif; ?>
 </div>
-<script src="assets/js/productAction.js"></script>
-<script>
-// Cập nhật tổng tiền khi tick chọn sản phẩm
-document.querySelectorAll('.select-item').forEach(chk => {
-    chk.addEventListener('change', () => {
-        const selected = Array.from(document.querySelectorAll('.select-item:checked')).map(i => i.value);
-
-        fetch('index.php?__api=cart&action=total', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-            body: 'ids=' + selected.join(',')
-        })
-        .then(res => res.json())
-        .then(data => {
-            const el = document.getElementById('total-price');
-            if (el) el.textContent = new Intl.NumberFormat('vi-VN').format(data.total);
-        });
-    });
-});
-</script>
+<!-- cart page uses global cart.js (delegated handlers) to update totals -->

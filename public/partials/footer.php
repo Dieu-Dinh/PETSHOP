@@ -10,7 +10,7 @@
         </div>
         <div class="footer-item">
             <h4>Liên hệ</h4>
-            <p>Email: <a href="mailto:dieudinh2005@gmail.com">dieudinh2005@gmail.com</a></p>
+            <p>Email: <a href="mailto:dieudinh2005@gmail.com">petshop@gmail.com</a></p>
             <p>Điện thoại: <a href="tel:0358493756">0358 493 756</a></p>
         </div>
         <div class="footer-item">

@@ -25,8 +25,8 @@ document.addEventListener("DOMContentLoaded", () => {
             const n = Number(row.dataset.total);
             if (!isNaN(n)) return n;
         }
-        // fallback: try to read the 'Tổng' cell (last numeric cell)
-        const totalCell = row.querySelector("td:last-child") || row.querySelector("td:nth-child(6)");
+        // fallback: try to read the 'Tổng' cell (6th column), prefer it over last-child
+        const totalCell = row.querySelector("td:nth-child(6)") || row.querySelector("td:last-child");
         return parseAmountFromText(totalCell ? totalCell.textContent : "0");
     }
 

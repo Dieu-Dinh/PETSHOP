@@ -64,6 +64,7 @@ if (isset($pdo) && $pdo) {
     <script src="assets/js/product_filter.js"></script>
     <script src="assets/js/productRender.js"></script>
     <script src="assets/js/productAction.js"></script>
+    <script src="assets/js/cart.js"></script>
     <script src="assets/js/category.js"></script>
 </body>
 </html>
