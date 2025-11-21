@@ -1,0 +1,82 @@
+.profile-modal {
+    display: none;
+    position: fixed;
+    z-index: 5000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.35);
+}
+
+/* Right-side panel layout */
+.profile-modal-content {
+    position: fixed;
+    right: 20px;
+    top: 80px;
+    width: 380px;
+    max-width: calc(100% - 40px);
+    background: #ffffff;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 18px 40px rgba(3,10,25,0.35);
+    animation: slideIn 220ms ease-out;
+}
+
+.close {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+    font-size: 20px;
+    cursor: pointer;
+    color: #333;
+}
+
+.profile-title {
+    margin: 0 0 12px 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: #222;
+}
+
+.profile-group {
+    margin-bottom: 14px;
+}
+
+.profile-group label {
+    display: block;
+    font-weight: 700;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.profile-group input {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+    background: #fbfbfb;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(12px); opacity: 0; }
+    to   { transform: translateX(0); opacity: 1; }
+}
+
+/* Responsive: on small screens show centered modal */
+@media (max-width: 560px) {
+    .profile-modal-content {
+        left: 50%;
+        right: auto;
+        top: 10%;
+        transform: translateX(-50%);
+        width: 92%;
+        max-width: 420px;
+    }
+}
+
+/* Make sure inputs look good when read-only */
+.profile-group input[readonly] {
+    background: #fff;
+    color: #111;
+}

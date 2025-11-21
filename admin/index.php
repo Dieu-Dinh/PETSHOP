@@ -30,7 +30,8 @@ $admin = $_SESSION['user']['email'];
         </main>
     </div>
 
-    <script>
+        <script src="assets/js/logout_confirm.js"></script>
+        <script>
         /**
          * 🔄 Hàm tải trang con
          * @param {string} page - tên trang (ví dụ: manage_user)

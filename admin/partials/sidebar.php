@@ -13,5 +13,5 @@
             <li><a href="#" class="menu-link" data-page="manage_supplier">🏢 Nhà cung cấp</a></li>
         </ul>
     </ul>
-    <a href="/PETSHOP/public/auth.php?action=logout" class="logout-btn">🚪 Đăng xuất</a>
+    <a href="/PETSHOP/public/auth.php?action=logout" id="btnLogoutAdmin" class="logout-btn">🚪 Đăng xuất</a>
 </aside>

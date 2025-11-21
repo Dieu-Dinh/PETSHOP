@@ -30,9 +30,14 @@ if (isset($pdo) && $pdo) {
     <link rel="stylesheet" href="assets/css/product_card.css">
     <link rel="stylesheet" href="assets/css/product_filter.css">
     <link rel="stylesheet" href="assets/css/footer.css">
+    <link rel="stylesheet" href="assets/css/checkout.css">
 </head>
 <body>
     <?php include 'partials/header.php'; ?>
+
+    <?php // Include profile & login modal partials so their markup, CSS and scripts are available site-wide ?>
+    <?php include 'partials/profile_modal.php'; ?>
+    <?php include 'partials/login_modal.php'; ?>
 
     <div class="container page-grid">
         <?php include 'partials/sidebar.php'; ?>
@@ -41,8 +46,12 @@ if (isset($pdo) && $pdo) {
             <?php
                 if (isset($_GET['page']) && $_GET['page'] === 'cart') {
                     include 'main/cart.php';
+                } elseif (isset($_GET['page']) && $_GET['page'] === 'checkout') {
+                    include 'main/checkout.php';
                 } elseif (isset($_GET['page']) && $_GET['page'] === 'products') {
                     include 'main/product.php';
+                } elseif (isset($_GET['page']) && $_GET['page'] === 'order_success') {
+                    include 'main/order_success.php';
                 } elseif (isset($_GET['page']) && (($_GET['page'] === 'gioithieu') || ($_GET['page'] === 'gioithieu.html'))) {
                     include 'main/gioithieu.html';
                 } elseif (isset($_GET['page']) && (($_GET['page'] === 'chinhSachDoiTra') || ($_GET['page'] === 'chinhSachDoiTra.html'))) {
@@ -61,10 +70,12 @@ if (isset($pdo) && $pdo) {
     <?php include 'partials/footer.php'; ?>
 
     <script src="assets/js/index.js"></script>
+    <script src="assets/js/logout_confirm.js"></script>
     <script src="assets/js/product_filter.js"></script>
     <script src="assets/js/productRender.js"></script>
     <script src="assets/js/productAction.js"></script>
     <script src="assets/js/cart.js"></script>
     <script src="assets/js/category.js"></script>
+    <script src="assets/js/checkout.js"></script>
 </body>
 </html>

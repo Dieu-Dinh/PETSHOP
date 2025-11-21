@@ -1,0 +1,25 @@
+.checkout-page { padding: 28px 0; }
+.checkout-grid { display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
+.checkout-left { background:#fff; padding:18px; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
+.checkout-right { background:#fff; padding:18px; border-radius:8px; box-shadow:0 6px 18px rgba(0,0,0,0.04); }
+.cart-list h2 { margin-top:0; }
+.cart-table { width:100%; border-collapse:collapse; margin-bottom:12px; }
+.cart-table th, .cart-table td { padding:10px 8px; border-bottom:1px solid #f0f0f0; text-align:left; }
+.cart-table .prod-price, .cart-table .prod-subtotal { white-space:nowrap; }
+.address-form h3, .payment-methods h3 { margin-top:18px; }
+.form-row { margin-bottom:10px; }
+.form-row label { display:block; font-weight:600; margin-bottom:6px; }
+.form-row input[type="text"], .form-row input[type="tel"], .form-row select { width:100%; padding:8px 10px; border-radius:6px; border:1px solid #e6e6e6; }
+.payment-methods label { display:block; margin:8px 0; }
+.order-summary h3 { margin-top:0; }
+.summary-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #f0f0f0; }
+.coupon-row { display:flex; gap:8px; padding-top:10px; }
+.coupon-row input { flex:1; }
+.btn-apply { padding:8px 10px; border-radius:6px; border:1px solid #ddd; background:#fff; cursor:pointer; }
+.total-row { font-size:1.1rem; padding-top:12px; }
+.btn-primary.full { width:100%; padding:10px 12px; border-radius:8px; background:#007bff; color:#fff; border:none; cursor:pointer; }
+
+@media (max-width: 900px) {
+    .checkout-grid { grid-template-columns: 1fr; }
+    .checkout-right { order: 2; }
+}

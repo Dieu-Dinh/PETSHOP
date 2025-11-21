@@ -1,0 +1,9 @@
+.admin-page { padding: 16px; }
+.orders-toolbar { display:flex; gap:8px; margin-bottom:12px; }
+.orders-toolbar input { flex:1; padding:8px; border-radius:6px; border:1px solid #ddd; }
+.admin-orders-table { width:100%; border-collapse:collapse; background:#fff; }
+.admin-orders-table th, .admin-orders-table td { padding:10px 8px; border-bottom:1px solid #f3f3f3; text-align:left; }
+.admin-orders-table thead th { background:#fafafa; font-weight:700; }
+.admin-modal { position:fixed; left:0; top:0; right:0; bottom:0; background:rgba(0,0,0,0.4); z-index:7000; display:flex; align-items:center; justify-content:center; }
+.admin-modal-content { background:#fff; padding:18px; border-radius:8px; width:720px; max-width:95%; position:relative; }
+.admin-modal .close { position:absolute; right:10px; top:8px; background:none; border:none; font-size:20px; cursor:pointer; }

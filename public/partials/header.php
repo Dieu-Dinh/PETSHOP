@@ -11,10 +11,11 @@
             <a href="contact.php">Liên hệ</a>
             <a href="index.php?page=cart" class="icon-cart">🛒 Giỏ hàng</a>
             <?php if ($currentUser): ?>
-                <a href="profile.php" class="icon-user">Xin chào, <?= htmlspecialchars($currentUser['first_name'] ?? $currentUser['email']) ?></a>
-                <a href="auth.php?action=logout">Đăng xuất</a>
+                 <a href="#" id="btnOpenProfile" class="icon-user">
+                     Xin chào, <?= htmlspecialchars($currentUser['first_name'] ?? $currentUser['email']) ?></a>
+                 <a href="auth.php?action=logout" id="btnLogout">Đăng xuất</a>
             <?php else: ?>
-                <a href="login.php" class="icon-user">Đăng nhập</a>
+                <a href="login.php" id="btnOpenLogin" class="icon-user">Đăng nhập</a>
             <?php endif; ?>
         </nav>
     </div>

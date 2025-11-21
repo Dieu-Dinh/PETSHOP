@@ -4,11 +4,20 @@ document.addEventListener('click', async function (e) {
   const addBtn = e.target.closest('.add-to-cart');
   if (addBtn) {
     const id = addBtn.dataset.id;
+    // determine quantity: if the button references a qty input via data-qty-input, use its value
+    let qty = 1;
+    if (addBtn.dataset && addBtn.dataset.qtyInput) {
+      const qEl = document.getElementById(addBtn.dataset.qtyInput);
+      if (qEl) {
+        const parsed = parseInt(qEl.value, 10);
+        if (!isNaN(parsed) && parsed > 0) qty = parsed;
+      }
+    }
     try {
       const res = await fetch('api.php?api=cart&action=add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ product_id: id, quantity: 1 }).toString()
+        body: new URLSearchParams({ product_id: id, quantity: qty }).toString()
       });
       const data = await res.json();
       if (data.status === 'success') {
@@ -27,11 +36,20 @@ document.addEventListener('click', async function (e) {
   const buyBtn = e.target.closest('.buy-now');
   if (buyBtn) {
     const id = buyBtn.dataset.id;
+    // determine quantity for buy now as well
+    let buyQty = 1;
+    if (buyBtn.dataset && buyBtn.dataset.qtyInput) {
+      const bEl = document.getElementById(buyBtn.dataset.qtyInput);
+      if (bEl) {
+        const parsed = parseInt(bEl.value, 10);
+        if (!isNaN(parsed) && parsed > 0) buyQty = parsed;
+      }
+    }
     try {
       await fetch('api.php?api=cart&action=add', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ product_id: id, quantity: 1 }).toString()
+        body: new URLSearchParams({ product_id: id, quantity: buyQty }).toString()
       });
       window.location.href = 'index.php?page=checkout';
     } catch (err) {
