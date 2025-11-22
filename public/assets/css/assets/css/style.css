@@ -1,29 +1,24 @@
 /* Tổng thể */
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { overflow-x: hidden; }
 body {
   font-family: "Segoe UI", Roboto, Arial, sans-serif;
   background: #fff;
   color: #333;
   line-height: 1.5;
 }
-.container { max-width: 1400px; margin: 0 auto; padding: 0 8px; }
+.container { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
 
 /* Header */
 .site-header {
   background: linear-gradient(90deg, #ff2a68, #ff6b8b);
   color: #fff;
-  padding: 12px 0;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
 }
 .header-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 6px 10px; /* giảm khoảng trống trái phải */
-  max-width: 1400px;
-  margin: 0 auto;
+  padding: 14px 0;
 }
 .brand {
   font-weight: 800;
@@ -59,12 +54,9 @@ body {
 /* Grid */
 .page-grid {
   display: grid;
-  grid-template-columns: 240px 1fr;
-  gap: 20px; /* giảm khoảng trống giữa sidebar và nội dung */
-  padding: 20px 0;
-  max-width: 1400px;
-  margin: 0 auto;
-  box-sizing: border-box;
+  grid-template-columns: 260px 1fr;
+  gap: 32px;
+  padding: 28px 0;
   align-items: start;
 }
 .sidebar {
@@ -73,21 +65,7 @@ body {
   border-radius: 10px;
   padding: 14px;
 }
-  
-.main-content {
-  /* Nới rộng thêm, tính theo kích thước container mới và gap giảm */
-  max-width: calc(1400px - 240px - 20px);
-  box-sizing: border-box;
-  overflow-x: hidden;
-}
-
-/* Ensure images inside main never exceed their container */
-.main-content img {
-  max-width: 100%;
-  height: auto;
-  display: block;
-}
-.left-sidebar h3 { margin-bottom: 10px; }
+.left-sidebar h3 { margin-bottom: 12px; }
 
 /* Hero */
 .hero-banner {
@@ -96,11 +74,29 @@ body {
   color: #fff;
   font-size: 18px;
   text-align: center;
-  padding: 32px 12px;
-  margin-bottom: 20px;
+  padding: 32px 16px;
+  margin-bottom: 22px;
   font-weight: bold;
+  min-height: 140px;
+}
+
+/* Constrain large sections so page feels balanced */
+.hero-banner,
+.page-grid,
+.product-grid,
+.blog-list,
+.blog-tips {
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
   width: 100%;
-  box-sizing: border-box;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+/* Make hero slightly shorter on small screens */
+@media (max-width: 800px) {
+  .hero-banner { padding: 20px 12px; min-height: 100px; }
 }
 
 ul {
@@ -113,15 +109,13 @@ ul {
 /* Product grid */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 16px;
-  width: 100%;
-  box-sizing: border-box;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 18px;
 }
 .product {
   border-radius: 12px;
-  border: 1px solid #f0f0f0;
-  padding: 18px;
+  border: 1px solid #eee;
+  padding: 14px;
   background: #fff;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -132,10 +126,9 @@ ul {
 }
 .product img {
   width: 100%;
-  height: 150px;
+  height: 140px;
   object-fit: contain;
   border-radius: 8px;
-  display: block;
 }
 .product .title {
   font-size: 16px;
@@ -158,13 +151,13 @@ ul {
 
 .btn-cart, .btn-buy {
   border: none;
-  padding: 8px 14px;
+  padding: 8px 12px;
   border-radius: 8px;
   color: #fff;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.25s ease;
-  min-width: 120px;
+  min-width: 110px;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
@@ -189,9 +182,14 @@ ul {
 }
 
 /* Responsive */
-@media (max-width: 900px) {
+@media (max-width: 1100px) {
   .page-grid { grid-template-columns: 1fr; }
-  .right-sidebar { display: none; }
+  .sidebar { order: 2; }
+}
+
+@media (max-width: 600px) {
+  .search-form input { padding: 8px 10px; }
+  .search-form button { padding: 8px 12px; }
 }
 
 .actions form {

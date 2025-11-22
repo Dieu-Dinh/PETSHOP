@@ -17,7 +17,8 @@ if (!$post) {
 }
 
 // Nếu content rỗng → chuyển hướng hoặc mở tab mới
-if (empty(trim($post['content']))) {
+// avoid passing null to trim() (PHP 8.1+ deprecation)
+if (empty(trim((string)($post['content'] ?? '')))) {
     // Nếu có source_url thì mở tab mới
     if (!empty($post['source_url'])) {
         echo "<script>window.open('" . htmlspecialchars($post['source_url']) . "', '_blank');</script>";
@@ -38,7 +39,7 @@ if (empty(trim($post['content']))) {
     function normalize_blog_image($val) {
         $placeholder = '/PETSHOP/public/assets/images/placeholder.png';
         if (empty($val)) return $placeholder;
-        $v = trim($val);
+        $v = trim((string)$val);
         if (preg_match('#^https?://#i', $v) || strpos($v, 'data:') === 0) return $v;
         if (strpos($v, '/') === 0) {
             if (stripos($v, '/public/') === 0 || stripos($v, '/PETSHOP/public/') === 0) return $v;

@@ -1,6 +1,23 @@
 <?php
+// Use a separate session for admin area to avoid clobbering public sessions in other tabs
+session_name('ADMINSESSID');
 session_start();
-if (!isset($_SESSION['user']) || $_SESSION['user']['role'] !== 'admin') {
+// Validate session user against DB to avoid accidental privilege leaks
+require_once __DIR__ . '/../app/models/User.php';
+$userValid = false;
+if (!empty($_SESSION['user']['id'])) {
+    $uModel = new User();
+    $dbUser = $uModel->findById($_SESSION['user']['id']);
+    if ($dbUser && ($dbUser['role'] ?? '') === 'admin') {
+        $userValid = true;
+        // refresh session user email/role from DB
+        $_SESSION['user']['email'] = $dbUser['email'];
+        $_SESSION['user']['role'] = $dbUser['role'];
+    }
+}
+if (!$userValid) {
+    // clear any stale session user data and redirect to public login
+    unset($_SESSION['user']);
     header("Location: /PETSHOP/public/login.php");
     exit();
 }

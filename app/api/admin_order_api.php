@@ -1,6 +1,10 @@
 <?php
 // Admin API for orders (GET list, GET details, POST actions)
-if (session_status() === PHP_SESSION_NONE) session_start();
+// Ensure we read the admin session (separate cookie)
+if (session_status() === PHP_SESSION_NONE) {
+    session_name('ADMINSESSID');
+    session_start();
+}
 header('Content-Type: application/json; charset=utf-8');
 
 // quick admin guard: ensure logged-in and role=admin

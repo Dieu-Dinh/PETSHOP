@@ -1,6 +1,10 @@
 <?php
 // Admin dashboard API: KPIs + recent orders
-if (session_status() === PHP_SESSION_NONE) session_start();
+// Use admin session namespace so admin area uses a separate cookie from public
+if (session_status() === PHP_SESSION_NONE) {
+    session_name('ADMINSESSID');
+    session_start();
+}
 header('Content-Type: application/json; charset=utf-8');
 
 // Admin guard

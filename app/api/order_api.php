@@ -26,6 +26,35 @@ if (empty($items) || !is_array($items)) {
     exit;
 }
 
+// --- Server-side validation: shipping info required ---
+$fullname = trim($data['fullname'] ?? '');
+$phone = trim($data['phone'] ?? '');
+$address = trim($data['address'] ?? '');
+$province = trim($data['province'] ?? '');
+
+if ($fullname === '' || strlen($fullname) < 2) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Họ tên người nhận không hợp lệ']);
+    exit;
+}
+$phoneDigits = preg_replace('/\D/', '', $phone);
+if ($phone === '' || strlen($phoneDigits) < 7) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Số điện thoại không hợp lệ']);
+    exit;
+}
+if ($province === '') {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Vui lòng chọn tỉnh/huyện']);
+    exit;
+}
+if ($address === '' || strlen($address) < 5) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'message' => 'Địa chỉ giao hàng không hợp lệ']);
+    exit;
+}
+// --- end validation ---
+
 $subtotal = floatval($data['subtotal'] ?? 0);
 $shipping = floatval($data['shipping_fee'] ?? 0);
 $tax = floatval($data['tax'] ?? 0);

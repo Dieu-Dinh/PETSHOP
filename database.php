@@ -1,7 +1,7 @@
 <?php
 // app/config/database.php
 
-$host = "localhost";
+$host = "103.139.203.43";
 $dbname = "sql_nhom68_itimi";
 $username = "sql_nhom68_itimi";
 $password = "ead471f910f7";

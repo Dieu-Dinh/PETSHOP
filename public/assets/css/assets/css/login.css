@@ -1,0 +1,83 @@
+/* ==== LOGIN PAGE ==== */
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f1f4f8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+form {
+    background-color: #fff;
+    padding: 40px 50px;
+    border-radius: 16px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    width: 360px;
+    text-align: center;
+}
+
+h2 {
+    margin-bottom: 25px;
+    color: #2a5d9f;
+    font-size: 1.8rem;
+}
+
+label {
+    display: block;
+    text-align: left;
+    margin-bottom: 6px;
+    color: #333;
+    font-weight: 500;
+}
+
+input[type="email"],
+input[type="password"] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    margin-bottom: 15px;
+    font-size: 1rem;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: #2a5d9f;
+    box-shadow: 0 0 0 2px rgba(42, 93, 159, 0.2);
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #2a5d9f;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #1f4a7d;
+}
+
+a {
+    display: inline-block;
+    margin-top: 15px;
+    color: #2a5d9f;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+p {
+    margin-bottom: 15px;
+}

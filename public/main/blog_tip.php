@@ -41,7 +41,9 @@
 
             foreach ($posts as $post):
 
-                if (empty(trim($post['content'])) && !empty($post['source_url'])) {
+                // ensure content is a string before trimming to avoid PHP 8.1+ deprecation warnings
+                $postContent = trim((string)($post['content'] ?? ''));
+                if ($postContent === '' && !empty($post['source_url'])) {
                     $link = htmlspecialchars($post['source_url']);
                     $target = 'target="_blank"';
                 } else {

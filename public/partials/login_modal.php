@@ -5,7 +5,9 @@
 
         <?php if (isset($error)) echo "<p style='color:red'>" . htmlspecialchars($error) . "</p>"; ?>
 
-        <form method="POST" action="auth.php?action=login" class="login-modal-form">
+        <div id="loginError" class="login-error" style="color:red;margin-bottom:8px;display:none;"></div>
+
+        <form method="POST" action="auth.php?action=login" class="login-modal-form" id="loginModalForm">
             <label>Email</label>
             <input type="email" name="email" required>
 

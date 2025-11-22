@@ -21,45 +21,92 @@ class AuthController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $email = trim($_POST['email']);
             $password = $_POST['password'];
-
             $user = $this->userModel->login($email, $password);
 
+            // Detect AJAX / fetch requests (X-Requested-With) or JSON accept
+            $isAjax = false;
+            $hdr = $_SERVER['HTTP_X_REQUESTED_WITH'] ?? '';
+            if (strtolower($hdr) === 'xmlhttprequest') $isAjax = true;
+            $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
+            if (strpos($accept, 'application/json') !== false) $isAjax = true;
+
             if ($user) {
-                // Lưu thông tin user vào session
-                $_SESSION['user'] = [
-                    'id' => $user['id'],
-                    'email' => $user['email'],
-                    'role' => $user['role']
-                ];
+                // If role is admin, store admin identity in a separate session cookie
+                if (($user['role'] ?? '') === 'admin') {
+                    // Preserve current public session name and id
+                    $publicName = session_name();
+                    $publicId = session_id();
+                    // write and close current public session
+                    session_write_close();
 
-                // Nếu trước đó người dùng có giỏ hàng trong session (khách), merge vào DB cho user này
-                require_once __DIR__ . '/../models/Cart.php';
-                $cart = new Cart();
-                // 1) Merge any in-memory session cart array (older behavior)
-                if (!empty($_SESSION['cart']) && is_array($_SESSION['cart'])) {
-                    foreach ($_SESSION['cart'] as $pid => $item) {
-                        $qty = $item['quantity'] ?? 1;
-                        $cart->addToCart($pid, $qty);
-                    }
-                    unset($_SESSION['cart']);
-                }
-                // 2) Merge any cart stored in the DB keyed by session_id into the user's cart
-                if (session_status() === PHP_SESSION_NONE) session_start();
-                $sessId = session_id();
-                if ($sessId) {
-                    $cart->mergeSessionCartToUser($sessId, $user['id']);
-                }
+                    // Start admin session under a different cookie name
+                    session_name('ADMINSESSID');
+                    session_start();
+                    $_SESSION['user'] = [
+                        'id' => $user['id'],
+                        'email' => $user['email'],
+                        'role' => $user['role']
+                    ];
+                    // ensure admin session saved
+                    session_write_close();
 
-                // 🧭 Phân quyền điều hướng
-                if ($user['role'] === 'admin') {
-                    // Admin dashboard sits in the admin folder at /PETSHOP/admin/
-                    header('Location: /PETSHOP/admin/index.php');
+                    // restore public session
+                    session_name($publicName);
+                    session_id($publicId);
+                    session_start();
                 } else {
-                    // Regular users should land on the public index (relative)
-                    header('Location: index.php');
+                    // Regular user: keep identity in the public session
+                    $_SESSION['user'] = [
+                        'id' => $user['id'],
+                        'email' => $user['email'],
+                        'role' => $user['role']
+                    ];
+
+                    // Merge any guest session cart into user's cart
+                    require_once __DIR__ . '/../models/Cart.php';
+                    $cart = new Cart();
+                    if (!empty($_SESSION['cart']) && is_array($_SESSION['cart'])) {
+                        foreach ($_SESSION['cart'] as $pid => $item) {
+                            $qty = $item['quantity'] ?? 1;
+                            $cart->addToCart($pid, $qty);
+                        }
+                        unset($_SESSION['cart']);
+                    }
+                    $sessId = session_id();
+                    if ($sessId) {
+                        $cart->mergeSessionCartToUser($sessId, $user['id']);
+                    }
                 }
-                exit;
+
+                // 🧭 Phân quyền điều hướng / response
+                if ($isAjax) {
+                    header('Content-Type: application/json; charset=utf-8');
+                    $resp = ['success' => true, 'user' => ['id' => $user['id'], 'email' => $user['email'], 'role' => $user['role']]];
+                    // suggest redirect for admin users so modal login can navigate directly
+                    if (($user['role'] ?? '') === 'admin') {
+                        $resp['redirect'] = '/PETSHOP/admin/index.php';
+                    } else {
+                        $resp['redirect'] = 'index.php';
+                    }
+                    echo json_encode($resp);
+                    exit;
+                } else {
+                    if ($user['role'] === 'admin') {
+                        header('Location: /PETSHOP/admin/index.php');
+                    } else {
+                        header('Location: index.php');
+                    }
+                    exit;
+                }
             } else {
+                // login failed
+                if ($isAjax) {
+                    header('Content-Type: application/json; charset=utf-8');
+                    http_response_code(401);
+                    echo json_encode(['success' => false, 'message' => 'Email hoặc mật khẩu không đúng.']);
+                    exit;
+                }
+
                 $error = "Email hoặc mật khẩu không đúng.";
                 include __DIR__ . '/../../public/login.php';
             }
