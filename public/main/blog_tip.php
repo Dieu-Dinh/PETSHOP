@@ -24,8 +24,9 @@
             // helper to normalize blog featured image values into public URLs
             function normalize_blog_image($val) {
                 $placeholder = '/PETSHOP/public/assets/images/placeholder.png';
-                if (empty($val)) return $placeholder;
-                $v = trim($val);
+                if ($val === null || $val === '' || empty($val)) return $placeholder;
+                $v = trim((string)$val);
+                if ($v === '') return $placeholder;
                 if (preg_match('#^https?://#i', $v) || strpos($v, 'data:') === 0) return $v;
                 if (strpos($v, '/') === 0) {
                     if (stripos($v, '/public/') === 0 || stripos($v, '/PETSHOP/public/') === 0) return $v;
@@ -41,9 +42,9 @@
 
             foreach ($posts as $post):
 
-                // ensure content is a string before trimming to avoid PHP 8.1+ deprecation warnings
-                $postContent = trim((string)($post['content'] ?? ''));
-                if ($postContent === '' && !empty($post['source_url'])) {
+                $contentRaw = $post['content'] ?? '';
+                $contentTrim = trim((string)$contentRaw);
+                if ($contentTrim === '' && !empty($post['source_url'])) {
                     $link = htmlspecialchars($post['source_url']);
                     $target = 'target="_blank"';
                 } else {
